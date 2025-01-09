@@ -58,12 +58,12 @@ const MainLayout = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  useEffect(() => {
-    // Kullanıcı bilgisi yoksa login sayfasına yönlendir
-    if (!user && location.pathname !== '/login') {
-      navigate('/login');
-    }
-  }, [user, navigate, location]);
+  // useEffect(() => {
+  //   // Kullanıcı bilgisi yoksa login sayfasına yönlendir
+  //   if (!user && location.pathname !== '/login') {
+  //     navigate('/login');
+  //   }
+  // }, [user, navigate, location]);
 
   useEffect(() => {
     const loadUserProfile = async () => {

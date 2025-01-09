@@ -59,12 +59,12 @@ const HobbySelection = () => {
 
     try {
       setLoading(true);
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) {
-        throw new Error('Kullanıcı bulunamadı');
-      }
+      // const currentUser = authService.getCurrentUser();
+      // if (!currentUser) {
+      //   throw new Error('Kullanıcı bulunamadı');
+      // }
 
-      await userService.updateUserHobbies(currentUser.username, selectedHobbies);
+      // await userService.updateUserHobbies(currentUser.username, selectedHobbies);
       navigate('/');
     } catch (err) {
       setError(err.message || 'Hobiler kaydedilirken bir hata oluştu');

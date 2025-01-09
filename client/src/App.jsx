@@ -19,37 +19,37 @@ import Profile from './pages/Profile';
 import Users from './pages/Users';
 
 // Auth kontrol komponenti
-const AuthCheck = ({ children }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const token = localStorage.getItem('token');
-  const publicPaths = ['/login', '/register'];
-  const isPublicPath = publicPaths.includes(location.pathname);
+// const AuthCheck = ({ children }) => {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const token = localStorage.getItem('token');
+//   const publicPaths = ['/login', '/register'];
+//   const isPublicPath = publicPaths.includes(location.pathname);
 
-  useEffect(() => {
-    if (!token && !isPublicPath) {
-      // Giriş yapmamış kullanıcıyı login sayfasına yönlendir
-      navigate('/login');
-    } else if (token && isPublicPath) {
-      // Giriş yapmış kullanıcıyı ana sayfaya yönlendir
-      navigate('/');
-    }
-  }, [token, isPublicPath, navigate, location]);
+//   useEffect(() => {
+//     if (!token && !isPublicPath) {
+//       // Giriş yapmamış kullanıcıyı login sayfasına yönlendir
+//       navigate('/login');
+//     } else if (token && isPublicPath) {
+//       // Giriş yapmış kullanıcıyı ana sayfaya yönlendir
+//       navigate('/');
+//     }
+//   }, [token, isPublicPath, navigate, location]);
 
-  // Token yoksa ve public path değilse login'e yönlendir
-  if (!token && !isPublicPath) {
-    return null;
-  }
+//   // Token yoksa ve public path değilse login'e yönlendir
+//   if (!token && !isPublicPath) {
+//     return null;
+//   }
 
-  return children;
-};
+//   return children;
+// };
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <AuthCheck>
+ 
           <UserProvider>
             <Routes>
               {/* Auth Pages */}
@@ -70,7 +70,7 @@ function App() {
               </Route>
             </Routes>
           </UserProvider>
-        </AuthCheck>
+
       </BrowserRouter>
     </ThemeProvider>
   );
