@@ -51,30 +51,25 @@ const userService = {
   getUserStats: async (username) => {
     try {
       const requests = [
-        api.get(`/api/profile/${username}/hosted-events/count`, { headers: getAuthHeader() })
+        api.get(`/api/events/hosted/${username}/count`, { headers: getAuthHeader() })
           .catch(() => ({ data: 0 })), // Default to 0 if request fails
-        api.get(`/api/badges/user/${username}`, { headers: getAuthHeader() })
-          .catch(() => ({ data: [] })), // Default to empty array if request fails
         api.get(`/api/friend-requests/friends`, { headers: getAuthHeader() })
           .catch(() => ({ data: [] })), // Default to empty array if request fails
         api.get(`/api/reputation/total/${username}`, { headers: getAuthHeader() })
           .catch(() => ({ data: { totalReputation: 0 } })) // Default to 0 if request fails
       ];
 
-      const [hostedEventsResponse, badgesResponse, friendsResponse, reputationResponse] = await Promise.all(requests);
+      const [hostedEventsResponse, friendsResponse, reputationResponse] = await Promise.all(requests);
 
       return {
         hostedEvents: hostedEventsResponse.data,
-        badges: badgesResponse.data,
         friends: friendsResponse.data.length,
         reputation: reputationResponse.data.totalReputation
       };
     } catch (error) {
       console.error('Error in getUserStats:', error);
-      // Return default values if everything fails
       return {
         hostedEvents: 0,
-        badges: [],
         friends: 0,
         reputation: 0
       };

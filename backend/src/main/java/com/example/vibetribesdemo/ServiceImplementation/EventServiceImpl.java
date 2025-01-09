@@ -6,8 +6,6 @@ import com.example.vibetribesdemo.Repository.AttendanceRepository;
 import com.example.vibetribesdemo.Repository.EventRepository;
 import com.example.vibetribesdemo.Repository.UserRepository;
 import com.example.vibetribesdemo.Repository.LocationRepository;
-import com.example.vibetribesdemo.Service.BadgeService;
-import com.example.vibetribesdemo.Service.FileStorageService;
 import com.example.vibetribesdemo.Service.NominatimService;
 import com.example.vibetribesdemo.entities.AttandanceEntity;
 import com.example.vibetribesdemo.entities.EventEntity;
@@ -15,6 +13,7 @@ import com.example.vibetribesdemo.entities.LocationEntity;
 import com.example.vibetribesdemo.entities.UserEntity;
 import com.example.vibetribesdemo.Service.EventService;
 import com.example.vibetribesdemo.DTOs.UserDto;
+import com.example.vibetribesdemo.Service.FileStorageService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -38,7 +37,6 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
     private final AttendanceRepository attendanceRepository;
-    private final BadgeService badgeService;
     private final NominatimService nominatimService;
     private final FileStorageService fileStorageService;
 
@@ -47,7 +45,6 @@ public class EventServiceImpl implements EventService {
             UserRepository userRepository,
             LocationRepository locationRepository,
             AttendanceRepository attendanceRepository,
-            BadgeService badgeService,
             NominatimService nominatimService,
             FileStorageService fileStorageService
     ) {
@@ -55,7 +52,6 @@ public class EventServiceImpl implements EventService {
         this.userRepository = userRepository;
         this.locationRepository = locationRepository;
         this.attendanceRepository = attendanceRepository;
-        this.badgeService = badgeService;
         this.nominatimService = nominatimService;
         this.fileStorageService = fileStorageService;
     }
@@ -102,7 +98,6 @@ public class EventServiceImpl implements EventService {
         event.setImageUrl(imageFileName);
 
         EventEntity savedEvent = eventRepository.save(event);
-        badgeService.awardEventBadges(user);
 
         return mapToResponseDto(savedEvent);
     }

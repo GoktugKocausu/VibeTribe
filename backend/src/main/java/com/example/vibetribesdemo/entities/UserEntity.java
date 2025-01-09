@@ -21,7 +21,7 @@ import java.util.ArrayList;
         @UniqueConstraint(columnNames = "email")
 })
 @Data
-@ToString(exclude = {"hostedEvents", "interests", "badges", "friends", "blockedUsers"})
+@ToString(exclude = {"hostedEvents", "interests", "friends", "blockedUsers"})
 public class UserEntity implements UserDetails {
 
     @Id
@@ -83,10 +83,6 @@ public class UserEntity implements UserDetails {
     )
     @JsonIgnore
     private List<InterestEntity> interests = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<BadgesEntity> badges = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

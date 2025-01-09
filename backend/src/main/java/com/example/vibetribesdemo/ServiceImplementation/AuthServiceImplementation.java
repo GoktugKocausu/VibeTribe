@@ -4,7 +4,6 @@ import com.example.vibetribesdemo.DTOs.RegisterRequestDto;
 import com.example.vibetribesdemo.DTOs.LoginRequestDto;
 import com.example.vibetribesdemo.Repository.UserRepository;
 import com.example.vibetribesdemo.Service.AuthService;
-import com.example.vibetribesdemo.Service.BadgeService;
 import com.example.vibetribesdemo.Utilities.Role;
 import com.example.vibetribesdemo.entities.UserEntity;
 import com.example.vibetribesdemo.Security.JwtService;
@@ -26,21 +25,18 @@ public class AuthServiceImplementation implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final BadgeService badgeService;
 
     @Autowired
     public AuthServiceImplementation(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            AuthenticationManager authenticationManager,
-            BadgeService badgeService
+            AuthenticationManager authenticationManager
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
-        this.badgeService = badgeService;
     }
 
     @Override
@@ -106,9 +102,6 @@ public class AuthServiceImplementation implements AuthService {
             response.put("role", user.getRole().name());
             response.put("status", user.getStatus());
             response.put("profilePicture", user.getProfilePicture());
-
-            // Award welcome badge if not already awarded
-            badgeService.awardWelcomeBadge(user);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

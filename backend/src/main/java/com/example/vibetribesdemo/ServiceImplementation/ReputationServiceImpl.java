@@ -5,7 +5,6 @@ import com.example.vibetribesdemo.DTOs.ReputationRequestDto;
 import com.example.vibetribesdemo.DTOs.TotalReputationDto;
 import com.example.vibetribesdemo.Repository.ReputationRepository;
 import com.example.vibetribesdemo.Repository.UserRepository;
-import com.example.vibetribesdemo.Service.BadgeService;
 import com.example.vibetribesdemo.Service.ReputationService;
 import com.example.vibetribesdemo.entities.ReputationEntity;
 import com.example.vibetribesdemo.entities.UserEntity;
@@ -19,14 +18,10 @@ public class ReputationServiceImpl implements ReputationService {
 
     private final ReputationRepository reputationRepository;
     private final UserRepository userRepository;
-    private final BadgeService badgeService;
 
-
-    public ReputationServiceImpl(ReputationRepository reputationRepository, UserRepository userRepository, BadgeService badgeService) {
+    public ReputationServiceImpl(ReputationRepository reputationRepository, UserRepository userRepository) {
         this.reputationRepository = reputationRepository;
         this.userRepository = userRepository;
-
-        this.badgeService = badgeService;
     }
 
     @Override
@@ -70,9 +65,6 @@ public class ReputationServiceImpl implements ReputationService {
         }
         recipient.setReputationPoints(recipient.getReputationPoints() + reputationRequestDto.getPoints());
         userRepository.save(recipient);
-
-        // Trigger badge awarding logic
-        badgeService.awardReputationBadges(recipient);
     }
 
     @Override

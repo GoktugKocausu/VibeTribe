@@ -65,7 +65,6 @@ const Profile = () => {
   });
   const [stats, setStats] = useState({
     hostedEvents: 0,
-    badges: [],
     friends: 0,
     reputation: 0
   });
@@ -492,48 +491,8 @@ const Profile = () => {
           </Paper>
         </Grid>
 
-        {/* Sağ Kolon - Rozetler ve İstatistikler */}
+        {/* Sağ Kolon - Etkinlikler */}
         <Grid item xs={12} md={8}>
-          {/* Rozetler */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              Rozetler
-            </Typography>
-            <Grid container spacing={2}>
-              {stats.badges && stats.badges.length > 0 ? (
-                stats.badges.map((badge, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
-                    <Card 
-                      elevation={0}
-                      sx={{ 
-                        bgcolor: '#F8FAFC',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        p: 2
-                      }}
-                    >
-                      <TrophyIcon sx={{ fontSize: 40, color: '#0EA5E9', mb: 1 }} />
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, textAlign: 'center' }}>
-                        {badge.badgeName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                        {badge.description}
-                      </Typography>
-                    </Card>
-                  </Grid>
-                ))
-              ) : (
-                <Grid item xs={12}>
-                  <Typography color="text.secondary" textAlign="center">
-                    Henüz rozet kazanılmamış
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
-          </Paper>
-
           {/* Son Etkinlikler */}
           <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
