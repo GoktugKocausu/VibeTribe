@@ -1,4 +1,5 @@
-Vibe Tribe
+
+
 Vibe Tribe is a social platform designed to simplify event planning and foster community engagement.
 The application enables users to create and join events, share real-time updates, and connect with others based on shared interests and proximity. 
 Developed as part of a Senior Design Project at MEF University, this project emphasizes scalability, security, and usability.
