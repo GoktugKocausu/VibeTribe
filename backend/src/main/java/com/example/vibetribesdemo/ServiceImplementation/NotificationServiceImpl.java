@@ -26,24 +26,31 @@ public class NotificationServiceImpl implements NotificationService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         List<NotificationsEntity> notifications = notificationRepository.findByUserOrderByTimestampDesc(user);
-        
-        // Debug log
+
         for (NotificationsEntity notification : notifications) {
             if ("friend".equals(notification.getType())) {
-                System.out.println("Friend notification found - ID: " + notification.getNotificationId() 
-                    + ", RequestID: " + notification.getRequestId()
-                    + ", Content: " + notification.getContent());
+                System.out.println("Friend notification found - ID: " + notification.getNotificationId()
+                        + ", RequestID: " + notification.getRequestId()
+                        + ", Content: " + notification.getContent());
             }
         }
-        
+
         return notifications;
+    }
+
+    private String getTitleForType(String type) {
+        return switch (type) {
+            case "friend" -> "Arkadaşlık İsteği";
+            case "message" -> "Yeni Mesaj";
+            default -> "Bildirim";
+        };
     }
 
     @Override
     public NotificationsEntity markNotificationAsRead(String username, Long notificationId) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         NotificationsEntity notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
@@ -59,7 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
     public void deleteNotification(String username, Long notificationId) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         NotificationsEntity notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
@@ -81,12 +88,11 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setType(type);
         notification.setReadStatus(false);
         notification.setTimestamp(LocalDateTime.now());
+        notification.setTitle(getTitleForType(type));
 
-        // Get the authenticated user as the sender
         String senderUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         if (senderUsername != null && !senderUsername.equals("anonymousUser")) {
-            UserEntity sender = userRepository.findByUsername(senderUsername)
-                    .orElse(null);
+            UserEntity sender = userRepository.findByUsername(senderUsername).orElse(null);
             if (sender != null) {
                 notification.setSender(sender);
                 notification.setSenderName(sender.getUsername());
@@ -94,11 +100,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        NotificationsEntity savedNotification = notificationRepository.save(notification);
-        System.out.println("Created notification - ID: " + savedNotification.getNotificationId() 
-            + ", Type: " + savedNotification.getType()
-            + ", Content: " + savedNotification.getContent()
-            + ", Sender: " + savedNotification.getSenderName()
-            + ", RequestID: " + savedNotification.getRequestId());
+        System.out.println("DEBUG: title -> " + notification.getTitle());
+        notificationRepository.save(notification);
     }
-} 
+}
