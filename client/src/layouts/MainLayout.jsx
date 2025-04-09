@@ -68,23 +68,37 @@ const MainLayout = ({ children }) => {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (currentUser?.username) {
-          const userProfile = await userService.getUserProfile(currentUser.username);
+        const currentUserRaw = localStorage.getItem('user');
+        if (!currentUserRaw) {
+          console.warn("localStorage'ta user yok");
+          logout();
+          return;
+        }
+  
+        const currentUser = JSON.parse(currentUserRaw);
+        if (!currentUser?.username) {
+          console.warn("localStorage'taki user objesinde username yok");
+          logout();
+          return;
+        }
+  
+        const userProfile = await userService.getUserProfile(currentUser.username);
+  
+        if (!user || !user.profilePicture || user.profilePicture !== userProfile.profilePicture) {
           updateUser({
             ...currentUser,
             ...userProfile
           });
         }
       } catch (error) {
-        console.error('Error loading user profile:', error);
+        console.error('Error loading user profile:', error.message);
+        logout();
       }
     };
-
-    if (user && !user.profilePicture) {
-      loadUserProfile();
-    }
-  }, [user, updateUser]);
+  
+    loadUserProfile();
+  }, []);
+  
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
