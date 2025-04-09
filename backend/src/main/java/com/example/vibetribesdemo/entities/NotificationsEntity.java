@@ -44,6 +44,8 @@ public class NotificationsEntity {
     @JsonProperty("requestId")
     private Long requestId; // ID of the friend request (for friend request notifications)
 
+    @Column(nullable = false)
+    private String title;
     @PrePersist
     protected void onCreate() {
         timestamp = LocalDateTime.now(); // Set the timestamp when a new notification is created
