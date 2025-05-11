@@ -328,6 +328,10 @@ public class EventServiceImpl implements EventService {
                 })
                 .collect(Collectors.toList());
     }
+    @Override
+    public long countHostedEvents(String username) {
+        return eventRepository.countHostedEvents(username);
+    }
 }
 
 

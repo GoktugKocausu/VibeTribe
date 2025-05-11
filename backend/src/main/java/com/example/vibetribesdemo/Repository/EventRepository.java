@@ -48,4 +48,9 @@ public interface EventRepository extends JpaRepository<EventEntity, Long> {
     int countHostedEventsByUser(@Param("username") String username);
 
 
+    @Query("SELECT COUNT(e) FROM EventEntity e WHERE e.createdBy.username = :username AND e.status = 'ACTIVE'")
+    long countHostedEvents(@Param("username") String username);
+
+
+
 }

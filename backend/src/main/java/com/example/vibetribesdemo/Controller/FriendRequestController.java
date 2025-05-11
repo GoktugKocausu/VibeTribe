@@ -9,7 +9,7 @@ import com.example.vibetribesdemo.Service.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 @RestController
@@ -42,9 +42,9 @@ public class FriendRequestController {
         return friendRequestService.declineFriendRequest(requestId);
     }
 
-    @GetMapping("/friends")
-    public List<UserEntity> getFriends() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    // FriendRequestController
+    @GetMapping("/friends/{username}")
+    public List<UserEntity> getFriendsOf(@PathVariable String username) {
         return friendRequestService.findFriends(username);
     }
 
@@ -67,4 +67,29 @@ public class FriendRequestController {
                 .orElseThrow(() -> new RuntimeException("Other user not found"));
         return friendRequestService.isBlocked(user, otherUser);
     }
+    @GetMapping("/pending")
+    public List<FriendEntity> getPendingRequests() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return friendRequestService.findPendingRequests(username);
+    }
+    @GetMapping("/are-friends")
+    public boolean areFriends(@RequestParam String otherUsername) {
+        String me = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user1 = userService.findByUsername(me)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity user2 = userService.findByUsername(otherUsername)
+                .orElseThrow(() -> new RuntimeException("Other user not found"));
+        return friendRequestService.areFriends(user1, user2);
+    }
+
+    @GetMapping("/is-pending")
+    public boolean isPending(@RequestParam String otherUsername) {
+        String me = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user1 = userService.findByUsername(me)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity user2 = userService.findByUsername(otherUsername)
+                .orElseThrow(() -> new RuntimeException("Other user not found"));
+        return friendRequestService.isFriendRequestPending(user1, user2);
+    }
+
 }

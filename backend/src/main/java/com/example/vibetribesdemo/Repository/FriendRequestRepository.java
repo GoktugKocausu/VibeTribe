@@ -30,4 +30,8 @@ public interface FriendRequestRepository extends JpaRepository<FriendEntity, Lon
             "   WHERE f.recipient = :user AND f.status = 'ACCEPTED'" +
             ")")
     List<UserEntity> findFriendsByUsername(@Param("user") UserEntity user);
+
+    @Query("SELECT f FROM FriendEntity f WHERE f.requester = :user AND f.status = 'PENDING'")
+    List<FriendEntity> findPendingRequestsByRequester(@Param("user") UserEntity user);
+
 }

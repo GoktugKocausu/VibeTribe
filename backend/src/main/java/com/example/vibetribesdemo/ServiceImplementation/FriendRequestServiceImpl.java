@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class FriendRequestServiceImpl implements FriendRequestService {
+public  class FriendRequestServiceImpl implements FriendRequestService {
 
     @Autowired
     private FriendRequestRepository friendRequestRepository;
@@ -160,4 +160,21 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                 .filter(friendship -> friendship.getStatus() == FriendEntity.FriendRequestStatus.BLOCKED)
                 .isPresent();
     }
+    @Override
+    public List<FriendEntity> findPendingRequests(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+        return friendRequestRepository.findPendingRequestsByRequester(user);
+    }
+    @Override
+    public boolean areFriends(UserEntity user1, UserEntity user2) {
+        return friendRequestRepository.areFriends(user1, user2);
+    }
+    @Override
+    public boolean isPendingBetween(UserEntity user1, UserEntity user2) {
+        return  friendRequestRepository.existsByRequesterAndRecipient(user1, user2) ||
+                friendRequestRepository.existsByRequesterAndRecipient(user2, user1);
+    }
+
 }
