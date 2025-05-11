@@ -155,6 +155,12 @@ public class EventController {
         eventService.leaveEvent(id, username);
         return ResponseEntity.ok("Successfully left the event");
     }
+    @GetMapping("/hosted/{username}/count")
+    public ResponseEntity<Long> getHostedEventCount(@PathVariable String username) {
+        long count = eventService.countHostedEvents(username);
+        return ResponseEntity.ok(count);
+    }
+
 }
 
 

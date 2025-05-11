@@ -32,4 +32,5 @@ public interface EventService {
     void deleteEvent(Long eventId, String username);
 
     List<UserDto> getEventAttendees(Long eventId);
+    long countHostedEvents(String username);
 }

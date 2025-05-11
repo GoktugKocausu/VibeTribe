@@ -25,4 +25,9 @@ public interface FriendRequestService {
 
     boolean isBlocked(UserEntity user1, UserEntity user2);
 
+    List<FriendEntity> findPendingRequests(String username);
+    boolean areFriends(UserEntity user1, UserEntity user2);
+    boolean isPendingBetween(UserEntity user1, UserEntity user2);
+
+
 }

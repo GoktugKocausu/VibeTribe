@@ -4,6 +4,7 @@ import com.example.vibetribesdemo.Service.User.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -54,7 +55,10 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/direct-messages/**", "/direct-messages/**").authenticated()
                         .requestMatchers("/api/profile/**", "/profile/**").authenticated()
                         .requestMatchers("/api/reputation/**", "/reputation/**").authenticated()
-                        
+                        .requestMatchers("/api/events/hosted/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/friend-requests/friends/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/events/hosted/**").permitAll()
+
                         // Any other request needs authentication
                         .anyRequest().authenticated()
                 )
