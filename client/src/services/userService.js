@@ -1,3 +1,4 @@
+import authService from './authService';
 import api from './axiosConfig';
 
 const getAuthHeader = () => {
@@ -53,7 +54,7 @@ const userService = {
       const requests = [
         api.get(`/api/events/hosted/${username}/count`, { headers: getAuthHeader() })
           .catch(() => ({ data: 0 })), // Default to 0 if request fails
-        api.get(`/api/friend-requests/friends`, { headers: getAuthHeader() })
+        api.get(`/api/friend-requests/friends/${username}`, { headers: getAuthHeader() })
           .catch(() => ({ data: [] })), // Default to empty array if request fails
         api.get(`/api/reputation/total/${username}`, { headers: getAuthHeader() })
           .catch(() => ({ data: { totalReputation: 0 } })) // Default to 0 if request fails
@@ -125,7 +126,18 @@ const userService = {
     }
   },
 
-  searchUsers: async (query = '', currentUsername) => {
+  searchUsers: async () => {
+    try {
+      const user = authService.getCurrentUser();
+      const response = await api.get(`/api/friend-requests/friends/${user.username}`, { headers: getAuthHeader() })
+          .catch(() => ({ data: [] }))
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Kullanıcılar aranamadı' };
+    }
+  },
+
+    searchAllUsers: async (query = '', currentUsername) => {
     try {
       const response = await api.get(`/api/profile/search?query=${encodeURIComponent(query)}&currentUsername=${encodeURIComponent(currentUsername)}`, {
         headers: getAuthHeader()
@@ -134,7 +146,8 @@ const userService = {
     } catch (error) {
       throw error.response?.data || { message: 'Kullanıcılar aranamadı' };
     }
-  }
+  },
+
 };
 
 export default userService; 

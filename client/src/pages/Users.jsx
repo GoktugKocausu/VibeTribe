@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -11,75 +11,139 @@ import {
   Box,
   CircularProgress,
   Alert,
-  InputAdornment,
-  IconButton,
-  Chip
-} from '@mui/material';
+  Chip,
+} from "@mui/material";
 import {
-  Search as SearchIcon,
-  Person as PersonIcon,
   EmojiEvents as TrophyIcon,
-  Star as ReputationIcon
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import userService from '../services/userService';
+  Star as ReputationIcon,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import userService from "../services/userService";
+import friendService from "../services/friendService";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [friendsList, setFriendsList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mode, setMode] = useState("friends");
+  const [requestedUsers, setRequestedUsers] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const navigate = useNavigate();
 
-  const searchUsers = async (query = '') => {
+  useEffect(() => {
+    fetchFriends();
+  }, []);
+
+  const fetchFriends = async () => {
     try {
       setLoading(true);
-      const currentUser = JSON.parse(localStorage.getItem('user'));
-      const response = await userService.searchUsers(query, currentUser?.username);
-      setUsers(response.content || []);
-      setError('');
+      const response = await userService.searchUsers();
+      const friendArray = Array.isArray(response) ? response : [];
+      setFriendsList(friendArray);
+      setUsers(friendArray);
+      setMode("friends");
+      setError("");
+
+      // fetch pending requests
+      const pending = await friendService.getPendingRequests();
+      setPendingRequests(pending.map((req) => req.recipient.username));
     } catch (err) {
-      setError(err.message || 'Kullanıcılar yüklenirken bir hata oluştu');
+      setError(err.message || "Kullanıcılar yüklenirken bir hata oluştu");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    searchUsers();
-  }, []);
-
-  const handleSearch = (event) => {
-    const query = event.target.value;
-    setSearchQuery(query);
-    searchUsers(query);
+  const searchAllUsers = async (query = "") => {
+    try {
+      setLoading(true);
+      const currentUser = JSON.parse(localStorage.getItem("user"));
+      const response = await userService.searchAllUsers(
+        query,
+        currentUser?.username
+      );
+      setUsers(Array.isArray(response.content) ? response.content : []);
+      setMode("search");
+      setError("");
+    } catch (err) {
+      setError(err.message || "Kullanıcılar aranamadı");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUserClick = (username) => {
-    navigate(`/profile/${username}`);
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (mode === "friends") {
+      const filtered = friendsList.filter(
+        (user) =>
+          user.username.toLowerCase().includes(query.toLowerCase()) ||
+          user.name?.toLowerCase().includes(query.toLowerCase()) ||
+          user.surname?.toLowerCase().includes(query.toLowerCase())
+      );
+      setUsers(filtered);
+    }
+  };
+
+  const handleSearchButton = () => {
+    if (searchQuery.trim() !== "") searchAllUsers(searchQuery);
+  };
+
+  const handleGoBack = () => {
+    setSearchQuery("");
+    setUsers(friendsList);
+    setMode("friends");
+  };
+
+  const showSnackbar = (message, severity) => {
+    setSnackbar({ open: true, message, severity });
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
-          Kullanıcılar
+          {mode === "friends"
+            ? "Arkadaşlar"
+            : `“${searchQuery}” için Arama Sonuçları`}
         </Typography>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Kullanıcı ara..."
-          value={searchQuery}
-          onChange={handleSearch}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ bgcolor: 'white', borderRadius: 1 }}
-        />
+
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Kullanıcı ara..."
+            value={searchQuery}
+            onChange={handleSearch}
+            sx={{ bgcolor: "white", borderRadius: 1 }}
+          />
+          <Button
+            variant="contained"
+            onClick={handleSearchButton}
+            sx={{
+              background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)",
+              },
+            }}
+          >
+            Ara
+          </Button>
+          {mode === "search" && (
+            <Button variant="outlined" onClick={handleGoBack}>
+              Geri
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {error && (
@@ -96,21 +160,25 @@ const Users = () => {
         <Grid container spacing={3}>
           {users.map((user) => (
             <Grid item xs={12} sm={6} md={4} key={user.username}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 3
-                  }
+              <Card
+                sx={{
+                  cursor: "pointer",
+                  transition: "transform 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: 3,
+                  },
                 }}
-                onClick={() => handleUserClick(user.username)}
+                onClick={() => navigate(`/profile/${user.username}`)}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                     <Avatar
-                      src={user.profilePicture ? `http://localhost:8080/api/users/profile-picture/${user.profilePicture}` : null}
+                      src={
+                        user.profilePicture
+                          ? `http://localhost:8080/api/users/profile-picture/${user.profilePicture}`
+                          : null
+                      }
                       sx={{ width: 60, height: 60, mr: 2 }}
                     >
                       {user.username[0].toUpperCase()}
@@ -124,23 +192,89 @@ const Users = () => {
                       </Typography>
                     </Box>
                   </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {user.bio || 'Henüz bir bio eklenmemiş'}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
+                    {user.bio || "Henüz bir bio eklenmemiş"}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: "flex", gap: 1 }}>
                     <Chip
                       icon={<TrophyIcon />}
                       label={`${user.hostedEvents || 0} Etkinlik`}
                       size="small"
-                      sx={{ bgcolor: '#E0F2FE', color: '#0284C7' }}
+                      sx={{ bgcolor: "#E0F2FE", color: "#0284C7" }}
                     />
                     <Chip
                       icon={<ReputationIcon />}
                       label={`${user.reputationPoints || 0} Rep.`}
                       size="small"
-                      sx={{ bgcolor: '#E0F2FE', color: '#0284C7' }}
+                      sx={{ bgcolor: "#E0F2FE", color: "#0284C7" }}
                     />
                   </Box>
+                  {mode === "search" && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      {friendsList.some((f) => f.username === user.username) ? (
+                        <Chip
+                          label="Arkadaşsınız"
+                          color="success"
+                          icon={<done />}
+                        />
+                      ) : pendingRequests.includes(user.username) ||
+                        requestedUsers.includes(user.username) ? (
+                        <Button variant="outlined" size="small" disabled>
+                          İstek Gönderildi
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={async (e) => {
+                            e.stopPropagation(); // kart tıklamasını engelle
+                            try {
+                              await friendService.sendFriendRequest(
+                                user.username
+                              );
+                              setRequestedUsers([
+                                ...requestedUsers,
+                                user.username,
+                              ]);
+                              showSnackbar(
+                                "Arkadaşlık isteği gönderildi",
+                                "success"
+                              );
+                            } catch (err) {
+                              const errorMessage =
+                                err.response?.data || err.message;
+                              showSnackbar(
+                                errorMessage === "User not found"
+                                  ? "Kullanıcı bulunamadı"
+                                  : errorMessage ===
+                                    "Friend request already sent"
+                                  ? "Zaten istek gönderdin"
+                                  : errorMessage ===
+                                    "Cannot send friend request to yourself"
+                                  ? "Kendine istek atamazsın"
+                                  : errorMessage === "Users are already friends"
+                                  ? "Zaten arkadaşsınız"
+                                  : "İstek gönderilemedi",
+                                "error"
+                              );
+                            }
+                          }}
+                        >
+                          Arkadaş Ekle
+                        </Button>
+                      )}
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             </Grid>
@@ -150,5 +284,4 @@ const Users = () => {
     </Container>
   );
 };
-
-export default Users; 
+export default Users;
