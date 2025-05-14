@@ -36,7 +36,7 @@ Backend Setup:
 Clone the repository:
 
 bash
-git clone https://github.com/yourusername/vibe-tribe.git
+git clone https://github.com/VibeTribeOrganization/VibeTribe.git
 cd vibe-tribe/backend
 
 
