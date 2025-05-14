@@ -1,10 +1,13 @@
 package com.example.vibetribesdemo.entities;
 
+import io.micrometer.common.lang.Nullable;
 import lombok.Data;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.math.BigDecimal;
+
 
 @Entity
 @Table(name = "events")
@@ -25,6 +28,10 @@ public class EventEntity {
     @ManyToOne // Relationship with User
     @JoinColumn(name = "created_by", nullable = false)
     private UserEntity createdBy; // User who created the event
+
+    @DecimalMin(value = "0.0")
+    @Nullable     // NULL serbest; DB default 0
+    private BigDecimal cost;
 
     @ManyToOne // Relationship with Location
     @JoinColumn(name = "location_id", nullable = false)
@@ -73,6 +80,7 @@ public class EventEntity {
         EventEntity that = (EventEntity) o;
         return eventId != null && eventId.equals(that.eventId);
     }
+
 
     @Override
     public int hashCode() {

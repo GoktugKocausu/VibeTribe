@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -30,4 +31,6 @@ public class EventRequestDto {
 
     @NotBlank(message = "Category is required")
     private String category;
+
+    private BigDecimal cost;
 }
