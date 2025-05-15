@@ -35,6 +35,7 @@ public class UserProfileController {
     public ResponseEntity<UserEntity> updateUserProfile(
             @AuthenticationPrincipal(expression = "username") String username,
             @RequestBody UserProfileUpdateDto userProfileUpdateDto) {
+        System.out.println("Gelen update datası: " + userProfileUpdateDto);
         UserEntity updatedUser = userService.updateUserProfile(username, userProfileUpdateDto);
         return ResponseEntity.ok(updatedUser);
     }

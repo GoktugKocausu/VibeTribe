@@ -81,8 +81,8 @@ public class UserEntity implements UserDetails {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "interest_id")
     )
-    @JsonIgnore
-    private List<InterestEntity> interests = new ArrayList<>();
+
+    private List<InterestsEntity> interests = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
