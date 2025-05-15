@@ -1,31 +1,30 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api/auth';
+const USER_KEY = 'user';
+
+const saveUser = (userObj) =>
+  localStorage.setItem(USER_KEY, JSON.stringify(userObj));
+
+const readUser = () =>
+  JSON.parse(localStorage.getItem(USER_KEY));
 
 const authService = {
+  // ───────────────────────────── LOGIN ──
   login: async (username, password) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, {
-        username,
-        password
-      });
-      
-      if (response.data.token) {
-        localStorage.setItem('user', JSON.stringify({
-          username,
-          name: response.data.name,
-          surname: response.data.surname,
-          token: response.data.token,
-          ...response.data
-        }));
+      const { data } = await axios.post(`${API_URL}/login`, { username, password });
+
+      if (data.token) {
+        saveUser({ username, name: data.name, surname: data.surname, ...data });
       }
-      
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Giriş işlemi başarısız oldu' };
+      return data;
+    } catch (err) {
+      throw err.response?.data || { message: 'Giriş işlemi başarısız oldu' };
     }
   },
 
+  // ─────────────────────────── REGISTER ──
   register: async (userData) => {
     try {
       await axios.post(`${API_URL}/register`, {
@@ -36,49 +35,50 @@ const authService = {
         password: userData.password,
         sex: userData.sex,
         phoneNumber: userData.phoneNumber,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       });
 
-      const loginResponse = await axios.post(`${API_URL}/login`, {
+      // otomatik login
+      const { data } = await axios.post(`${API_URL}/login`, {
         username: userData.username,
-        password: userData.password
+        password: userData.password,
       });
-      
-      if (loginResponse.data.token) {
-        localStorage.setItem('user', JSON.stringify({
-          username: userData.username,
-          token: loginResponse.data.token,
-          ...loginResponse.data
-        }));
+
+      if (data.token) {
+        saveUser({ username: userData.username, ...data });
       }
-      
-      return loginResponse.data;
-    } catch (error) {
-      if (error.response?.data?.message?.includes('duplicate key')) {
-        if (error.response.data.message.includes('email')) {
+      return data;
+    } catch (err) {
+      if (err.response?.data?.message?.includes('duplicate key')) {
+        if (err.response.data.message.includes('email')) {
           throw { message: 'Bu email adresi zaten kullanımda' };
         }
-        if (error.response.data.message.includes('username')) {
+        if (err.response.data.message.includes('username')) {
           throw { message: 'Bu kullanıcı adı zaten kullanımda' };
         }
       }
-      throw error.response?.data || { message: 'Kayıt işlemi başarısız oldu' };
+      throw err.response?.data || { message: 'Kayıt işlemi başarısız oldu' };
     }
   },
 
+  // ───────────────────────────── LOGOUT ──
   logout: () => {
     localStorage.clear();
     window.location.href = '/login';
   },
 
-  getCurrentUser: () => {
-    return JSON.parse(localStorage.getItem('user'));
+  // ──────────────────── HELPER FONKSİYONLAR ──
+  /** localStorage'daki user objesini döndürür */
+  getCurrentUser: () => readUser(),
+
+  /** user objesini günceller / oluşturur */
+  setCurrentUser: (partial) => {
+    const current = readUser() || {};
+    saveUser({ ...current, ...partial });
   },
 
-  isAuthenticated: () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    return !!user?.token;
-  }
+  /** token var mı? */
+  isAuthenticated: () => !!readUser()?.token,
 };
 
-export default authService; 
+export default authService;

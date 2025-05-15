@@ -44,6 +44,9 @@ import friendService from "../services/friendService";
 import userService from "../services/userService";
 import { useUser } from "../contexts/UserContext";
 import { useParams } from "react-router-dom";
+import { hobbyOptions } from '../services/hobbies';      // üst kısımda
+import { Autocomplete } from '@mui/material';
+
 
 const Profile = () => {
   const { username } = useParams();
@@ -64,6 +67,7 @@ const Profile = () => {
     preferredMood: "",
     name: "",
     surname: "",
+    interests: []
   });
   const [stats, setStats] = useState({
     hostedEvents: 0,
@@ -82,6 +86,7 @@ const Profile = () => {
     areFriends: false,
     isPending: false,
   });
+  
 
   useEffect(() => {
     if (username !== currentUser?.username) {
@@ -143,6 +148,8 @@ const Profile = () => {
           preferredMood: userProfile.preferredMood || "",
           name: userProfile.name || "",
           surname: userProfile.surname || "",
+          interests: userProfile.interests?.map(i => i.name) || []
+
         });
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -169,15 +176,23 @@ const Profile = () => {
 
   const handleEditFormSubmit = async () => {
     try {
-      const updatedUser = await userService.updateUserProfile(
-        profileUser.username,
-        editForm
+      await userService.updateUserProfile(
+       profileUser.username,
+   { bio: editForm.bio,
+    age: Number(editForm.age),
+    preferredMood: editForm.preferredMood,
+    name: editForm.name,
+    surname: editForm.surname} 
       );
-
+      await userService.updateUserHobbies(
+  profileUser.username,
+  editForm.interests
+);
       // Profil bilgilerini güncelle
       setProfileUser((prev) => ({
         ...prev,
         ...editForm,
+   
       }));
 
       // Context'i güncelle
@@ -574,7 +589,7 @@ const Profile = () => {
                         {profileUser.interests.map((interest, index) => (
                           <Chip
                             key={index}
-                            label={interest}
+                            label={typeof interest === "string" ? interest : interest.name}
                             size="small"
                             sx={{
                               bgcolor: "#E0F2FE",
@@ -674,6 +689,28 @@ const Profile = () => {
                 placeholder="Kendinizden bahsedin..."
               />
             </Grid>
+
+<Grid item xs={12}>
+  <Autocomplete
+    multiple
+    options={hobbyOptions}
+    value={editForm.interests}
+    onChange={(_, newValue) =>
+      setEditForm(prev => ({ ...prev, interests: newValue }))
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="İlgi Alanları"
+        placeholder="En az 3 ilgi alanı seç"
+      />
+    )}
+    ChipProps={{
+      sx: { bgcolor: '#E0F2FE', color: '#0284C7', fontSize: '0.75rem' }
+    }}
+  />
+</Grid>
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth

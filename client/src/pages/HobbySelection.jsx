@@ -13,26 +13,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import userService from '../services/userService';
 import authService from '../services/authService';
+import { hobbyCategories } from '../services/hobbies';  
+
+
 
 // Hobi kategorileri ve alt hobiler
-const hobbyCategories = {
-  'Spor & Fitness': [
-    'Yoga', 'Koşu', 'Yüzme', 'Bisiklet', 'Futbol', 'Basketbol', 'Tenis',
-    'Pilates', 'Dans', 'Hiking'
-  ],
-  'Sanat & Yaratıcılık': [
-    'Resim', 'Müzik', 'Fotoğrafçılık', 'El Sanatları', 'Seramik', 'Dijital Sanat',
-    'Tiyatro', 'Yazarlık', 'Şiir', 'Film Yapımı'
-  ],
-  'Eğitim & Gelişim': [
-    'Yabancı Dil', 'Kodlama', 'Kişisel Gelişim', 'Meditasyon', 'Kitap Kulübü',
-    'Girişimcilik', 'Finans', 'Tarih', 'Bilim', 'Felsefe'
-  ],
-  'Sosyal & Eğlence': [
-    'Board Oyunları', 'Video Oyunları', 'Karaoke', 'Yemek Yapımı', 'Şarap Tadımı',
-    'Seyahat', 'Konserler', 'Parti', 'Gönüllülük', 'Sosyal Sorumluluk'
-  ]
-};
+
 
 const HobbySelection = () => {
   const navigate = useNavigate();
@@ -59,13 +45,18 @@ const HobbySelection = () => {
 
     try {
       setLoading(true);
-      // const currentUser = authService.getCurrentUser();
-      // if (!currentUser) {
-      //   throw new Error('Kullanıcı bulunamadı');
-      // }
+       const currentUser = authService.getCurrentUser();
+       if (!currentUser) {
+        throw new Error('Kullanıcı bulunamadı');
+      }
 
-      // await userService.updateUserHobbies(currentUser.username, selectedHobbies);
-      navigate('/');
+      await userService.updateUserHobbies(currentUser.username, selectedHobbies);
+
+    // (Opsiyonel) Local user objesini de güncelle
+    currentUser.interests = selectedHobbies.map(name => ({ name }));
+    authService.setCurrentUser(currentUser);
+
+    navigate('/');
     } catch (err) {
       setError(err.message || 'Hobiler kaydedilirken bir hata oluştu');
       setLoading(false);

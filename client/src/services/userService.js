@@ -18,17 +18,27 @@ const userService = {
     }
   },
 
-  updateUserProfile: async (username, profileData) => {
-    try {
-      const response = await api.put(`/api/profile/update`, profileData, {
-        headers: getAuthHeader()
-      });
+updateUserProfile: async (username, profileData) => {
+  console.log("Giden profileData:", profileData);
 
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Profil güncellenemedi' };
-    }
-  },
+  try {
+    const response = await api.put(
+      '/api/profile/update',          // URL
+      profileData,                    // <-- body (was updateDto)
+      {
+        params: { username },         // <-- ?username=gokoloco
+        headers: {
+          ...getAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Profil güncellenemedi' };
+  }
+},
 
   uploadProfilePicture: async (file) => {
     try {
@@ -77,25 +87,34 @@ const userService = {
     }
   },
 
-  updateUserHobbies: async (username, hobbies) => {
-    try {
-      const response = await api.post(`/api/profile/${username}/hobbies`, hobbies, {
+updateUserHobbies: async (username, hobbies) => {
+  try {
+    const response = await api.post(
+      `/api/profile/${username}/hobbies`,
+      hobbies,
+      {
         headers: getAuthHeader()
-      });
+      }
+    );
 
-      // Update current user info in localStorage
-      const currentUser = JSON.parse(localStorage.getItem('user'));
+    // localStorage güvenli güncelleme (token koruması)
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
+    if (currentUser && currentUser.token) {
       const updatedUserData = {
         ...currentUser,
         interests: hobbies
       };
       localStorage.setItem('user', JSON.stringify(updatedUserData));
-
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { message: 'Hobiler güncellenirken bir hata oluştu' };
+    } else {
+      console.warn("Kullanıcı bilgisi alınamadı veya token eksik. localStorage güncellenmedi.");
     }
-  },
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Hobiler güncellenirken bir hata oluştu' };
+  }
+},
 
   giveReputation: async (recipientUsername, points, reason) => {
     try {
