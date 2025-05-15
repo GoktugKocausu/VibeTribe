@@ -33,4 +33,6 @@ public interface EventService {
 
     List<UserDto> getEventAttendees(Long eventId);
     long countHostedEvents(String username);
+
+
 }

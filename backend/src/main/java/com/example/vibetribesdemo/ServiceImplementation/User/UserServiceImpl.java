@@ -4,7 +4,7 @@ import com.example.vibetribesdemo.DTOs.UserProfileUpdateDto;
 import com.example.vibetribesdemo.Repository.InterestRepository;
 import com.example.vibetribesdemo.Repository.UserRepository;
 import com.example.vibetribesdemo.Service.User.UserService;
-import com.example.vibetribesdemo.entities.InterestEntity;
+import com.example.vibetribesdemo.entities.InterestsEntity;
 import com.example.vibetribesdemo.entities.UserEntity;
 import com.example.vibetribesdemo.Service.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +16,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.vibetribesdemo.entities.InterestsEntity;
+
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -74,6 +77,9 @@ public class UserServiceImpl implements UserService {
             user.setSurname(userProfileUpdateDto.getSurname());
         }
 
+
+
+
         user.setLastLoginDate(LocalDateTime.now());
         return userRepository.save(user);
     }
@@ -113,11 +119,11 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<InterestEntity> interests = new ArrayList<>();
+        List<InterestsEntity> interests = new ArrayList<>();
         for (String hobby : hobbies) {
-            InterestEntity interest = interestRepository.findByName(hobby)
+            InterestsEntity interest = interestRepository.findByName(hobby)
                 .orElseGet(() -> {
-                    InterestEntity newInterest = new InterestEntity();
+                    InterestsEntity newInterest = new InterestsEntity();
                     newInterest.setName(hobby);
                     return interestRepository.save(newInterest);
                 });

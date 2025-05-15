@@ -2,6 +2,7 @@ package com.example.vibetribesdemo.DTOs;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,4 +24,5 @@ public class EventResponseDto {
     private String creatorSurname;
     private String creatorUsername;
     private String creatorProfilePicture;
+    private BigDecimal cost;
 }

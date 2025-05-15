@@ -70,6 +70,7 @@ public class EventServiceImpl implements EventService {
         location.setType("event_location");
         location = locationRepository.save(location);
 
+
         // Handle image upload
         String imageFileName = null;
         if (eventRequestDto.getImage() != null && !eventRequestDto.getImage().isEmpty()) {
@@ -96,7 +97,7 @@ public class EventServiceImpl implements EventService {
         event.setCategory(eventRequestDto.getCategory());
         event.setCurrentAttendees(0);
         event.setImageUrl(imageFileName);
-
+        event.setCost(eventRequestDto.getCost());
         EventEntity savedEvent = eventRepository.save(event);
 
         return mapToResponseDto(savedEvent);
@@ -161,6 +162,9 @@ public class EventServiceImpl implements EventService {
         }
         if (eventRequestDto.getMaxAttendees() != null) {
             event.setMaxAttendees(eventRequestDto.getMaxAttendees());
+        }
+        if (eventRequestDto.getCost() != null) {
+            event.setCost(eventRequestDto.getCost());
         }
 
         if (eventRequestDto.getAddress() != null && !eventRequestDto.getAddress().equals(event.getLocation().getAddress())) {
@@ -254,6 +258,7 @@ public class EventServiceImpl implements EventService {
         response.setStatus(event.getStatus());
         response.setCategory(event.getCategory());
         response.setAddress(event.getLocation().getAddress());
+        response.setCost(event.getCost());
         response.setImageUrl(event.getImageUrl() != null ? "/api/events/images/" + event.getImageUrl() : null);
         
         // Add creator details
