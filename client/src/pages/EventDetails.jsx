@@ -42,6 +42,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import "dayjs/locale/tr";
 import eventService from "../services/eventService";
+import EventChat from "../components/EventChat";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -76,6 +77,7 @@ const EventDetails = () => {
         // Fetch attendees
         const attendeesData = await eventService.getEventAttendees(id);
         setAttendees(attendeesData);
+     
         // Check if current user is attending
         setIsAttending(
           attendeesData.some(
@@ -103,6 +105,8 @@ const EventDetails = () => {
 
     loadEventDetails();
   }, [id]);
+
+  
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -262,7 +266,9 @@ const EventDetails = () => {
   };
 
   const [showAttendees, setShowAttendees] = useState(false);
-
+   const isAttendee = attendees.some(user => user.username === currentUser.username);
+const isCreator = event?.creatorUsername === currentUser.username;
+const canSeeChat = isAttendee || isCreator;
   if (loading) {
     return (
       <Box
@@ -474,6 +480,17 @@ const EventDetails = () => {
       </Grid>
       {/* === END INNER GRID === */}
     </Paper>
+    {canSeeChat && (
+  <EventChat eventId={id} currentUser={currentUser} />
+)}
+
+{!canSeeChat && (
+  <Paper sx={{ p: 3, mt: 3 }}>
+    <Typography color="text.secondary">
+      Etkinlik sohbetine katılmak için önce etkinliğe katılmalısınız.
+    </Typography>
+  </Paper>
+)}
   </Grid>
 
     
