@@ -68,50 +68,59 @@ const EventDetails = () => {
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const isEventCreator = event?.creatorUsername === currentUser?.username;
 
+  //saved
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     const loadEventDetails = async () => {
       try {
         setLoading(true);
-        const data = await eventService.getEventById(id);
-        setEvent(data);
-        // Fetch attendees
+
+        const eventData = await eventService.getEventById(id);
+        setEvent(eventData);
+
         const attendeesData = await eventService.getEventAttendees(id);
         setAttendees(attendeesData);
-     
-        // Check if current user is attending
+
         setIsAttending(
           attendeesData.some(
             (attendee) => attendee.username === currentUser?.username
           )
         );
 
-        // Edit form verilerini doldur
+        try {
+          const saved = await eventService.isEventSaved(id);
+          setIsSaved(saved === true);
+        } catch (checkErr) {
+          console.error("Kaydedilen kontrol hatası:", checkErr);
+        }
+
         setEditFormData({
-          title: data.title,
-          description: data.description,
-          startTime: dayjs(data.startTime),
-          endTime: dayjs(data.startTime).add(1, 'hour'),
-          maxAttendees: data.maxAttendees,
-          address: data.address,
-          category: data.category,
-          cost: data.cost || "",
+          title: eventData.title,
+          description: eventData.description,
+          startTime: dayjs(eventData.startTime),
+          endTime: dayjs(eventData.endTime),
+          maxAttendees: eventData.maxAttendees,
+          address: eventData.address,
+          category: eventData.category,
+          cost: eventData.cost || "",
         });
       } catch (err) {
-        setError("Etkinlik detayları yüklenirken bir hata oluştu");
+        console.error("Detay yükleme hatası:", err);
+        setError("Etkinlik detayları yüklenirken hata oluştu.");
       } finally {
         setLoading(false);
       }
     };
 
     loadEventDetails();
-  }, [id]);
-
-  
+  }, [id]); // <== ✅ sadece id
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-                       console.log("safasg",editFormData);
+      console.log("safasg", editFormData);
       // Tarihleri backend'in beklediği formata dönüştür
       const formattedData = {
         ...editFormData,
@@ -119,7 +128,6 @@ const EventDetails = () => {
         endTime: editFormData.endTime.format("YYYY-MM-DDTHH:mm:ss"),
         maxAttendees: parseInt(editFormData.maxAttendees),
 
-        
         cost: editFormData.cost === "" ? null : parseFloat(editFormData.cost),
       };
 
@@ -197,6 +205,32 @@ const EventDetails = () => {
     }
   };
 
+  const handleSaveEvent = async () => {
+    setSaving(true);
+    try {
+      await eventService.saveEvent(id);
+      const saved = await eventService.isEventSaved(id);
+      setIsSaved(saved);
+    } catch (err) {
+      console.error("Etkinlik kaydedilemedi", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUnsaveEvent = async () => {
+    setSaving(true);
+    try {
+      await eventService.unsaveEvent(id);
+      const saved = await eventService.isEventSaved(id);
+      setIsSaved(saved);
+    } catch (err) {
+      console.error("Etkinlik kayıttan kaldırılamadı", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Add this component for Attendees List Modal
   const AttendeesListModal = ({ open, handleClose, attendees }) => {
     const navigate = useNavigate();
@@ -266,9 +300,11 @@ const EventDetails = () => {
   };
 
   const [showAttendees, setShowAttendees] = useState(false);
-   const isAttendee = attendees.some(user => user.username === currentUser.username);
-const isCreator = event?.creatorUsername === currentUser.username;
-const canSeeChat = isAttendee || isCreator;
+  const isAttendee = attendees.some(
+    (user) => user.username === currentUser.username
+  );
+  const isCreator = event?.creatorUsername === currentUser.username;
+  const canSeeChat = isAttendee || isCreator;
   if (loading) {
     return (
       <Box
@@ -384,116 +420,175 @@ const canSeeChat = isAttendee || isCreator;
           </Box>
         </Paper>
 
-      <Grid container spacing={4}>
-  {/* Main Content */}
-  <Grid item xs={12} md={8}>
-    <Paper sx={{ p: 4, borderRadius: 2, mb: 4 }}>
-      <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-        Etkinlik Detayları
-      </Typography>
-      <Typography
-        variant="body1"
-        sx={{ mb: 4, color: 'text.secondary', lineHeight: 1.8 }}
-      >
-        {event.description}
-      </Typography>
-
-      <Divider sx={{ my: 4 }} />
-
-      {/* === INNER GRID === */}
-      <Grid container spacing={3}>
-        {/* Başlangıç Tarihi */}
-        <Grid item xs={12} sm={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <CalendarToday sx={{ color: '#0EA5E9' }} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">Başlangıç Tarihi</Typography>
-              <Typography variant="body1">
-                {format(new Date(event.startTime), 'PPP', { locale: tr })}
+        <Grid container spacing={4}>
+          {/* Main Content */}
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ p: 4, borderRadius: 2, mb: 4 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+                Etkinlik Detayları
               </Typography>
-            </Box>
-          </Box>
-        </Grid>
-
-        {/* Bitiş Tarihi */}
-        <Grid item xs={12} sm={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <CalendarToday sx={{ color: '#0EA5E9' }} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">Bitiş Tarihi</Typography>
-              <Typography variant="body1">
-                {format(new Date(event.endTime), 'PPP', { locale: tr })}
+              <Typography
+                variant="body1"
+                sx={{ mb: 4, color: "text.secondary", lineHeight: 1.8 }}
+              >
+                {event.description}
               </Typography>
-            </Box>
-          </Box>
-        </Grid>
 
-        {/* Başlangıç Saati */}
-        <Grid item xs={12} sm={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <AccessTime sx={{ color: '#0EA5E9' }} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">Başlangıç Saati</Typography>
-              <Typography variant="body1">
-                {format(new Date(event.startTime), 'HH:mm', { locale: tr })}
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
+              <Divider sx={{ my: 4 }} />
 
-        {/* Bitiş Saati */}
-        <Grid item xs={12} sm={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <AccessTime sx={{ color: '#0EA5E9' }} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">Bitiş Saati</Typography>
-              <Typography variant="body1">
-                {format(new Date(event.endTime), 'HH:mm', { locale: tr })}
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
+              {/* === INNER GRID === */}
+              <Grid container spacing={3}>
+                {/* Başlangıç Tarihi */}
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <CalendarToday sx={{ color: "#0EA5E9" }} />
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Başlangıç Tarihi
+                      </Typography>
+                      <Typography variant="body1">
+                        {format(new Date(event.startTime), "PPP", {
+                          locale: tr,
+                        })}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-        {/* Konum */}
-        <Grid item xs={12} sm={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <LocationOn sx={{ color: '#0EA5E9' }} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">Konum</Typography>
-              <Typography variant="body1">{event.address}</Typography>
-            </Box>
-          </Box>
-        </Grid>
+                {/* Bitiş Tarihi */}
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <CalendarToday sx={{ color: "#0EA5E9" }} />
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Bitiş Tarihi
+                      </Typography>
+                      <Typography variant="body1">
+                        {format(new Date(event.endTime), "PPP", { locale: tr })}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-        {/* Katılım Ücreti */}
-        <Grid item xs={12} sm={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <Person sx={{ color: '#0EA5E9' }} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">Katılım Ücreti</Typography>
-              <Typography variant="body1">
-                {event.cost && event.cost > 0 ? `${event.cost} ₺` : 'Belirtilmemiş'}
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
-      {/* === END INNER GRID === */}
-    </Paper>
-    {canSeeChat && (
-  <EventChat eventId={id} currentUser={currentUser} />
-)}
+                {/* Başlangıç Saati */}
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <AccessTime sx={{ color: "#0EA5E9" }} />
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Başlangıç Saati
+                      </Typography>
+                      <Typography variant="body1">
+                        {format(new Date(event.startTime), "HH:mm", {
+                          locale: tr,
+                        })}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-{!canSeeChat && (
-  <Paper sx={{ p: 3, mt: 3 }}>
-    <Typography color="text.secondary">
-      Etkinlik sohbetine katılmak için önce etkinliğe katılmalısınız.
-    </Typography>
-  </Paper>
-)}
-  </Grid>
+                {/* Bitiş Saati */}
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <AccessTime sx={{ color: "#0EA5E9" }} />
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Bitiş Saati
+                      </Typography>
+                      <Typography variant="body1">
+                        {format(new Date(event.endTime), "HH:mm", {
+                          locale: tr,
+                        })}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-    
+                {/* Konum */}
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <LocationOn sx={{ color: "#0EA5E9" }} />
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Konum
+                      </Typography>
+                      <Typography variant="body1">{event.address}</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Katılım Ücreti */}
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <Person sx={{ color: "#0EA5E9" }} />
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Katılım Ücreti
+                      </Typography>
+                      <Typography variant="body1">
+                        {event.cost && event.cost > 0
+                          ? `${event.cost} ₺`
+                          : "Belirtilmemiş"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+              {/* === END INNER GRID === */}
+            </Paper>
+            {canSeeChat && <EventChat eventId={id} currentUser={currentUser} />}
+
+            {!canSeeChat && (
+              <Paper sx={{ p: 3, mt: 3 }}>
+                <Typography color="text.secondary">
+                  Etkinlik sohbetine katılmak için önce etkinliğe
+                  katılmalısınız.
+                </Typography>
+              </Paper>
+            )}
+          </Grid>
 
           {/* Sidebar */}
           <Grid item xs={12} md={4}>
@@ -638,10 +733,22 @@ const canSeeChat = isAttendee || isCreator;
               </Button>
               <Button
                 fullWidth
-                variant="outlined"
+                variant={isSaved ? "contained" : "outlined"}
                 startIcon={<BookmarkBorder />}
+                onClick={isSaved ? handleUnsaveEvent : handleSaveEvent}
+                sx={{
+                  background: isSaved
+                    ? "linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)"
+                    : "transparent",
+                  color: isSaved ? "#fff" : "inherit",
+                  "&:hover": {
+                    background: isSaved
+                      ? "linear-gradient(135deg, #0369A1 0%, #0284C7 100%)"
+                      : "rgba(0,0,0,0.04)",
+                  },
+                }}
               >
-                Kaydet
+                {isSaved ? "Kaydedildi" : "Kaydet"}
               </Button>
             </Paper>
           </Grid>
@@ -732,18 +839,17 @@ const canSeeChat = isAttendee || isCreator;
                 />
 
                 <TextField
-  label="Katılım Ücreti (₺)"
-  type="number"
-  fullWidth
-  value={editFormData.cost}
-  onChange={(e) =>
-    setEditFormData({
-      ...editFormData,
-      cost: e.target.value,
-    })
-  }
-/>
-        
+                  label="Katılım Ücreti (₺)"
+                  type="number"
+                  fullWidth
+                  value={editFormData.cost}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      cost: e.target.value,
+                    })
+                  }
+                />
 
                 <TextField
                   label="Adres"

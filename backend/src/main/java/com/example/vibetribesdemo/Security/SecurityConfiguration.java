@@ -55,9 +55,12 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/direct-messages/**", "/direct-messages/**").authenticated()
                         .requestMatchers("/api/profile/**", "/profile/**").authenticated()
                         .requestMatchers("/api/reputation/**", "/reputation/**").authenticated()
+                        .requestMatchers("/api/saved-events/**", "/saved-events/**").authenticated()
                         .requestMatchers("/api/events/hosted/**").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/api/friend-requests/friends/**").hasAnyRole("USER","ADMIN")
                         .requestMatchers(HttpMethod.GET,"/api/events/hosted/**").permitAll()
+                        
+
 
                         // Any other request needs authentication
                         .anyRequest().authenticated()
