@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: harbor.local/vibetribe/backend
+  tag: dev
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: harbor-auth
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://vibetribe-postgres:5432/vibetribe_db
+  SPRING_DATASOURCE_USERNAME: vibetribe_user
+  SPRING_DATASOURCE_PASSWORD: vibetribe_pass
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: backend.vibetribe.local
+      paths:
+        - path: /
+          pathType: Prefix
+

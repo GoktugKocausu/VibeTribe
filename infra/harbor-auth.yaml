@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJoYXJib3IubG9jYWwiOnsidXNlcm5hbWUiOiJyb2JvdCR0ZWt0b24tYm90IiwicGFzc3dvcmQiOiI4eUlkODhrb0RSM0JkcEprWDFsM0ZJZHVFN1FvRjBlZCIsImVtYWlsIjoidGVrdG9uQHZpYmV0cmliZS5sb2NhbCIsImF1dGgiOiJjbTlpYjNRa2RHVnJkRzl1TFdKdmREbzRlVWxrT0RocmIwUlNNMEprY0VwcldERnNNMFpKWkhWRk4xRnZSakJsWkE9PSJ9fX0=
+kind: Secret
+metadata:
+  name: harbor-auth
+  namespace: vibetribe-dev
+  resourceVersion: "1517"
+  uid: 4db1adfc-6971-4ae6-afd7-d67d9872dedc
+type: kubernetes.io/dockerconfigjson

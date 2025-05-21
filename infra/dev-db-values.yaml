@@ -1,0 +1,11 @@
+# dev-db-values.yaml
+auth:
+  username: vibetribe_user
+  password: vibetribe_pass
+  database: vibetribe_db
+
+primary:
+  persistence:
+    enabled: true
+    size: 1Gi
+
