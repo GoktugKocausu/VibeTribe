@@ -1,0 +1,11 @@
+externalURL: https://harbor.local
+harborAdminPassword: "Harbor12345"
+expose:
+  type: ingress
+  ingress:
+    hosts:
+      core: harbor.local
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
