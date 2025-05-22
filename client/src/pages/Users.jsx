@@ -17,6 +17,7 @@ import {
   EmojiEvents as TrophyIcon,
   Star as ReputationIcon,
 } from "@mui/icons-material";
+import DoneIcon from "@mui/icons-material/Done"; // ✅ Gerekli import
 import { useNavigate } from "react-router-dom";
 import userService from "../services/userService";
 import friendService from "../services/friendService";
@@ -51,7 +52,6 @@ const Users = () => {
       setMode("friends");
       setError("");
 
-      // fetch pending requests
       const pending = await friendService.getPendingRequests();
       setPendingRequests(pending.map((req) => req.recipient.username));
     } catch (err) {
@@ -213,6 +213,38 @@ const Users = () => {
                       sx={{ bgcolor: "#E0F2FE", color: "#0284C7" }}
                     />
                   </Box>
+
+                  {/* ✅ Yalnızca arkadaş modundaysa mesaj butonunu göster */}
+                  {mode === "friends" && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/friends?selectedUser=${user.username}`);
+                        }}
+                        sx={{
+                          textTransform: "none",
+                          background:
+                            "linear-gradient(135deg, #4ade80 0%, #22c55e 100%)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(135deg, #16a34a 0%, #4ade80 100%)",
+                          },
+                        }}
+                      >
+                        Mesaj
+                      </Button>
+                    </Box>
+                  )}
+
                   {mode === "search" && (
                     <Box
                       sx={{
@@ -225,7 +257,7 @@ const Users = () => {
                         <Chip
                           label="Arkadaşsınız"
                           color="success"
-                          icon={<done />}
+                          icon={<DoneIcon />}
                         />
                       ) : pendingRequests.includes(user.username) ||
                         requestedUsers.includes(user.username) ? (
@@ -237,7 +269,7 @@ const Users = () => {
                           variant="outlined"
                           size="small"
                           onClick={async (e) => {
-                            e.stopPropagation(); // kart tıklamasını engelle
+                            e.stopPropagation();
                             try {
                               await friendService.sendFriendRequest(
                                 user.username
@@ -284,4 +316,5 @@ const Users = () => {
     </Container>
   );
 };
+
 export default Users;

@@ -95,6 +95,10 @@ const CreateEvent = () => {
     if (formData.cost !== '' && Number(formData.cost) < 0) {
     newErrors.cost = 'Ücret 0₺ veya daha fazla olmalı';
     }
+    if (!formData.image) {
+  newErrors.image = "Etkinlik görseli seçilmelidir";
+}
+
     return newErrors;
   };
 

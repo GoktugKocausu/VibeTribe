@@ -1,10 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import theme from './theme';
 import './styles/global.css';
 import { UserProvider } from './contexts/UserContext';
+
+
+
+
+
 
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -17,6 +22,8 @@ import MainLayout from './layouts/MainLayout';
 import EventDetails from './pages/EventDetails';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
+import Settings from "./pages/Settings";
+
 
 // Auth kontrol komponenti
 // const AuthCheck = ({ children }) => {
@@ -44,7 +51,11 @@ import Users from './pages/Users';
 //   return children;
 // };
 
+
 function App() {
+
+
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -67,6 +78,7 @@ function App() {
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/create-event" element={<CreateEvent />} />
                 <Route path="/event/:id" element={<EventDetails />} />
+                <Route path="/settings" element={<Settings />} />
               </Route>
             </Routes>
           </UserProvider>

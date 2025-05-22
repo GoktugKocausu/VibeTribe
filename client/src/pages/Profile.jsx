@@ -175,6 +175,11 @@ const Profile = () => {
   };
 
   const handleEditFormSubmit = async () => {
+if (editForm.interests.length < 3) {
+    showNotification("Lütfen en az 3 ilgi alanı seçiniz.", "error");
+    return;
+  }
+
     try {
       await userService.updateUserProfile(
        profileUser.username,

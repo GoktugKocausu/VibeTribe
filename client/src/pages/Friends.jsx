@@ -37,6 +37,8 @@ import EventIcon from '@mui/icons-material/Event';
 import CircleIcon from '@mui/icons-material/Circle';
 import DoneIcon from '@mui/icons-material/Done';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import { useSearchParams } from "react-router-dom";
+
 
 const ChatContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -208,6 +210,9 @@ const Friends = () => {
   const [addFriendDialog, setAddFriendDialog] = useState(false);
   const [newFriendUsername, setNewFriendUsername] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [searchParams] = useSearchParams();
+  const selectedUsername = searchParams.get("selectedUser");
+
 
   // Fetch friends list
   useEffect(() => {
@@ -222,6 +227,21 @@ const Friends = () => {
       messageService.markMessagesAsRead(selectedFriend.username);
     }
   }, [selectedFriend]);
+
+  useEffect(() => {
+  if (selectedUsername && friends.length > 0) {
+    const matchedFriend = friends.find(
+      f => f.username.toLowerCase() === selectedUsername.toLowerCase()
+    );
+    if (matchedFriend) {
+      setSelectedFriend(matchedFriend);
+      if (isMobile) {
+        setMobileView('chat');
+      }
+    }
+  }
+}, [selectedUsername, friends]);
+
 
   // Auto-update message status
   useEffect(() => {
