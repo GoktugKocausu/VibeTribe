@@ -2,7 +2,6 @@ package com.example.vibetribesdemo.ServiceImplementation;
 
 import com.example.vibetribesdemo.entities.FriendEntity;
 import com.example.vibetribesdemo.entities.UserEntity;
-import com.example.vibetribesdemo.entities.NotificationsEntity;
 import com.example.vibetribesdemo.Repository.FriendRequestRepository;
 import com.example.vibetribesdemo.Repository.UserRepository;
 import com.example.vibetribesdemo.Repository.NotificationRepository;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public  class FriendRequestServiceImpl implements FriendRequestService {
+public class FriendRequestServiceImpl implements FriendRequestService {
 
     @Autowired
     private FriendRequestRepository friendRequestRepository;
@@ -31,22 +30,18 @@ public  class FriendRequestServiceImpl implements FriendRequestService {
 
     @Override
     public FriendEntity sendFriendRequest(UserEntity requester, UserEntity recipient) {
-        // Kendine arkadaşlık isteği göndermeyi engelle
         if (requester.equals(recipient)) {
             throw new IllegalArgumentException("Cannot send friend request to yourself");
         }
 
-        // Zaten arkadaşlık isteği var mı kontrol et
         if (friendRequestRepository.findByRequesterAndRecipientAndStatus(requester, recipient, FriendEntity.FriendRequestStatus.PENDING).isPresent()) {
             throw new IllegalArgumentException("Friend request already sent");
         }
 
-        // Zaten arkadaş mı kontrol et
         if (friendRequestRepository.findByRequesterAndRecipientAndStatus(requester, recipient, FriendEntity.FriendRequestStatus.ACCEPTED).isPresent()) {
             throw new IllegalArgumentException("Users are already friends");
         }
 
-        // Arkadaşlık isteğini oluştur ve kaydet
         FriendEntity request = new FriendEntity();
         request.setRequester(requester);
         request.setRecipient(recipient);
@@ -56,21 +51,9 @@ public  class FriendRequestServiceImpl implements FriendRequestService {
 
         System.out.println("Created friend request with ID: " + savedRequest.getId());
 
-        // Bildirim oluştur
-        NotificationsEntity notification = new NotificationsEntity();
-        notification.setUser(recipient);
-        notification.setSender(requester);
-        notification.setSenderName(requester.getUsername());
-        notification.setSenderAvatar(requester.getProfilePicture());
-        notification.setContent(requester.getUsername() + " size arkadaşlık isteği gönderdi");
-        notification.setType("friend");
-        notification.setReadStatus(false);
-        notification.setTimestamp(LocalDateTime.now());
-        notification.setRequestId(savedRequest.getId()); // Arkadaşlık isteği ID'sini ayarla
-
-        NotificationsEntity savedNotification = notificationRepository.save(notification);
-        System.out.println("Created notification with ID: " + savedNotification.getNotificationId() + 
-                         " for friend request ID: " + savedNotification.getRequestId());
+        // Bildirim oluştur (4 parametreli metodu kullanıyoruz)
+        String content = requester.getUsername() + " size arkadaşlık isteği gönderdi";
+        notificationService.createNotification(recipient.getUsername(), content, "friend", savedRequest.getId());
 
         return savedRequest;
     }
@@ -90,8 +73,8 @@ public  class FriendRequestServiceImpl implements FriendRequestService {
         createMutualFriendship(friendRequest.getRequester(), friendRequest.getRecipient());
 
         // Bildirim gönder
-        String notificationContent = friendRequest.getRecipient().getUsername() + " accepted your friend request.";
-        notificationService.createNotification(friendRequest.getRequester().getUsername(), notificationContent, "friend");
+        String content = friendRequest.getRecipient().getUsername() + " accepted your friend request.";
+        notificationService.createNotification(friendRequest.getRequester().getUsername(), content, "friend");
 
         return friendRequest;
     }
@@ -110,10 +93,10 @@ public  class FriendRequestServiceImpl implements FriendRequestService {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        
+
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-                
+
         try {
             return friendRequestRepository.findFriendsByUsername(user);
         } catch (Exception e) {
@@ -160,6 +143,7 @@ public  class FriendRequestServiceImpl implements FriendRequestService {
                 .filter(friendship -> friendship.getStatus() == FriendEntity.FriendRequestStatus.BLOCKED)
                 .isPresent();
     }
+
     @Override
     public List<FriendEntity> findPendingRequests(String username) {
         UserEntity user = userRepository.findByUsername(username)
@@ -167,14 +151,15 @@ public  class FriendRequestServiceImpl implements FriendRequestService {
 
         return friendRequestRepository.findPendingRequestsByRequester(user);
     }
+
     @Override
     public boolean areFriends(UserEntity user1, UserEntity user2) {
         return friendRequestRepository.areFriends(user1, user2);
     }
+
     @Override
     public boolean isPendingBetween(UserEntity user1, UserEntity user2) {
-        return  friendRequestRepository.existsByRequesterAndRecipient(user1, user2) ||
+        return friendRequestRepository.existsByRequesterAndRecipient(user1, user2) ||
                 friendRequestRepository.existsByRequesterAndRecipient(user2, user1);
     }
-
 }

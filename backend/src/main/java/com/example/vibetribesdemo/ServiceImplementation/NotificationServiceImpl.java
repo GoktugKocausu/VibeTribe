@@ -77,8 +77,15 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.delete(notification);
     }
 
+    // ✅ 3-param version (required by interface)
     @Override
     public void createNotification(String username, String content, String type) {
+        createNotification(username, content, type, null); // delegate to 4-param version with null requestId
+    }
+
+    // ✅ 4-param version (for friend request with requestId)
+    @Override
+    public void createNotification(String username, String content, String type, Long requestId) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -89,6 +96,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setReadStatus(false);
         notification.setTimestamp(LocalDateTime.now());
         notification.setTitle(getTitleForType(type));
+        notification.setRequestId(requestId);
 
         String senderUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         if (senderUsername != null && !senderUsername.equals("anonymousUser")) {
@@ -100,7 +108,6 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        System.out.println("DEBUG: title -> " + notification.getTitle());
         notificationRepository.save(notification);
     }
 }
