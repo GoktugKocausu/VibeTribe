@@ -387,7 +387,7 @@ if (editForm.interests.length < 3) {
               <Avatar
                 src={
                   profileUser?.profilePicture
-                    ? `http://localhost:8080/users/profile-picture/${profileUser.profilePicture}`
+                    ? `${process.env.REACT_APP_API_BASE_URL}/users/profile-picture/${profileUser.profilePicture}`
                     : null
                 }
                 sx={{

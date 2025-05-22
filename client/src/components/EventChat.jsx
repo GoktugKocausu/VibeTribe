@@ -24,11 +24,7 @@ const EventChat = ({ eventId, currentUser }) => {
 
   const fetchMessages = async () => {
     try {
-      const response = await api.get(`/api/events/${eventId}/chat`, {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      });
+      const response = await api.get(`/events/${eventId}/chat`);
       setMessages(response.data);
     } catch (err) {
       setError("Mesajlar yüklenemedi");
@@ -36,20 +32,15 @@ const EventChat = ({ eventId, currentUser }) => {
       setLoading(false);
     }
   };
-
+  
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     setSending(true);
     try {
       const response = await api.post(
-        `/api/events/${eventId}/chat`,
+        `/events/${eventId}/chat`,
         null,
-        {
-          params: { content: newMessage },
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-        }
+        { params: { content: newMessage } }
       );
       setMessages((prev) => [...prev, response.data]);
       setNewMessage("");
@@ -59,6 +50,7 @@ const EventChat = ({ eventId, currentUser }) => {
       setSending(false);
     }
   };
+  
 
   useEffect(() => {
     fetchMessages();

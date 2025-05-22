@@ -422,7 +422,7 @@ const MainLayout = ({ children }) => {
                 aria-expanded={open ? 'true' : undefined}
               >
                 <Avatar
-                  src={user?.profilePicture ? `http://localhost:8080/api/users/profile-picture/${user.profilePicture}` : null}
+                  src={user?.profilePicture ? `${process.env.REACT_APP_API_BASE_URL}/users/profile-picture/${user.profilePicture}` : null}
                   alt={user?.name || user?.username || '?'}
                   sx={{ 
                     width: 40, 

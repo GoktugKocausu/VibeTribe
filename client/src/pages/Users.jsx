@@ -176,7 +176,7 @@ const Users = () => {
                     <Avatar
                       src={
                         user.profilePicture
-                          ? `http://localhost:8080/api/users/profile-picture/${user.profilePicture}`
+                          ? `${process.env.REACT_APP_API_BASE_URL}/users/profile-picture/${user.profilePicture}`
                           : null
                       }
                       sx={{ width: 60, height: 60, mr: 2 }}

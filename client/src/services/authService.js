@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/auth';
+const API_URL = `${process.env.REACT_APP_API_BASE_URL}/auth`;
 const USER_KEY = 'user';
 
 const saveUser = (userObj) =>
@@ -15,11 +15,28 @@ const authService = {
     try {
       const { data } = await axios.post(`${API_URL}/login`, { username, password });
 
+      console.log("LOGIN response:", data);
+
       if (data.token) {
-        saveUser({ username, name: data.name, surname: data.surname, ...data });
+        const userData = {
+          username: data.username,
+          name: data.name,
+          surname: data.surname,
+          token: data.token
+        };
+
+
+
+        saveUser(userData);
+      } else {
+        console.warn("Giriş başarılı ama token yok!");
+        alert("Giriş başarılı ama token boş geldi.");
       }
+
       return data;
     } catch (err) {
+      console.error("Login hatası:", err.response?.data || err.message);
+      alert("Login hatası: " + (err.response?.data?.message || err.message));
       throw err.response?.data || { message: 'Giriş işlemi başarısız oldu' };
     }
   },
@@ -38,17 +55,31 @@ const authService = {
         status: 'ACTIVE',
       });
 
-      // otomatik login
       const { data } = await axios.post(`${API_URL}/login`, {
         username: userData.username,
         password: userData.password,
       });
 
+      console.log("REGISTER sonrası login response:", data);
+
       if (data.token) {
-        saveUser({ username: userData.username, ...data });
+        const savedUser = {
+          username: userData.username,
+          name: data.name,
+          surname: data.surname,
+          token: data.token
+        };
+
+        saveUser(savedUser);
+      } else {
+        console.warn("Kayıt sonrası login başarılı ama token yok!");
+        alert("Kayıt sonrası login başarılı ama token boş.");
       }
+
       return data;
     } catch (err) {
+      console.error("Register hatası:", err.response?.data || err.message);
+
       if (err.response?.data?.message?.includes('duplicate key')) {
         if (err.response.data.message.includes('email')) {
           throw { message: 'Bu email adresi zaten kullanımda' };
@@ -57,27 +88,27 @@ const authService = {
           throw { message: 'Bu kullanıcı adı zaten kullanımda' };
         }
       }
+
+      alert("Kayıt hatası: " + (err.response?.data?.message || err.message));
       throw err.response?.data || { message: 'Kayıt işlemi başarısız oldu' };
     }
   },
 
   // ───────────────────────────── LOGOUT ──
   logout: () => {
+
     localStorage.clear();
     window.location.href = '/login';
   },
 
   // ──────────────────── HELPER FONKSİYONLAR ──
-  /** localStorage'daki user objesini döndürür */
   getCurrentUser: () => readUser(),
 
-  /** user objesini günceller / oluşturur */
   setCurrentUser: (partial) => {
     const current = readUser() || {};
     saveUser({ ...current, ...partial });
   },
 
-  /** token var mı? */
   isAuthenticated: () => !!readUser()?.token,
 };
 

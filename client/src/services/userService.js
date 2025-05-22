@@ -9,7 +9,7 @@ const getAuthHeader = () => {
 const userService = {
   getUserProfile: async (username) => {
     try {
-      const response = await api.get(`/api/profile/${username}`, {
+      const response = await api.get(`/profile/${username}`, {
         headers: getAuthHeader()
       });
       return response.data;
@@ -18,34 +18,33 @@ const userService = {
     }
   },
 
-updateUserProfile: async (username, profileData) => {
-  console.log("Giden profileData:", profileData);
+  updateUserProfile: async (username, profileData) => {
+    console.log("Giden profileData:", profileData);
 
-  try {
-    const response = await api.put(
-      '/api/profile/update',          // URL
-      profileData,                    // <-- body (was updateDto)
-      {
-        params: { username },         // <-- ?username=gokoloco
-        headers: {
-          ...getAuthHeader(),
-          'Content-Type': 'application/json',
+    try {
+      const response = await api.put(
+        '/profile/update',
+        profileData,
+        {
+          params: { username },
+          headers: {
+            ...getAuthHeader(),
+            'Content-Type': 'application/json',
+          },
         },
-      },
-    );
-
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: 'Profil güncellenemedi' };
-  }
-},
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Profil güncellenemedi' };
+    }
+  },
 
   uploadProfilePicture: async (file) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await api.post('/api/profile/upload-picture', formData, {
+      const response = await api.post('/profile/upload-picture', formData, {
         headers: {
           ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
@@ -62,12 +61,9 @@ updateUserProfile: async (username, profileData) => {
   getUserStats: async (username) => {
     try {
       const requests = [
-        api.get(`/api/events/hosted/${username}/count`, { headers: getAuthHeader() })
-          .catch(() => ({ data: 0 })), // Default to 0 if request fails
-        api.get(`/api/friend-requests/friends/${username}`, { headers: getAuthHeader() })
-          .catch(() => ({ data: [] })), // Default to empty array if request fails
-        api.get(`/api/reputation/total/${username}`, { headers: getAuthHeader() })
-          .catch(() => ({ data: { totalReputation: 0 } })) // Default to 0 if request fails
+        api.get(`/events/hosted/${username}/count`, { headers: getAuthHeader() }).catch(() => ({ data: 0 })),
+        api.get(`/friend-requests/friends/${username}`, { headers: getAuthHeader() }).catch(() => ({ data: [] })),
+        api.get(`/reputation/total/${username}`, { headers: getAuthHeader() }).catch(() => ({ data: { totalReputation: 0 } }))
       ];
 
       const [hostedEventsResponse, friendsResponse, reputationResponse] = await Promise.all(requests);
@@ -87,38 +83,35 @@ updateUserProfile: async (username, profileData) => {
     }
   },
 
-updateUserHobbies: async (username, hobbies) => {
-  try {
-    const response = await api.post(
-      `/api/profile/${username}/hobbies`,
-      hobbies,
-      {
-        headers: getAuthHeader()
+  updateUserHobbies: async (username, hobbies) => {
+    try {
+      const response = await api.post(
+        `/profile/${username}/hobbies`,
+        hobbies,
+        { headers: getAuthHeader() }
+      );
+
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+
+      if (currentUser && currentUser.token) {
+        const updatedUserData = {
+          ...currentUser,
+          interests: hobbies
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+      } else {
+        console.warn("Kullanıcı bilgisi alınamadı veya token eksik. localStorage güncellenmedi.");
       }
-    );
 
-    // localStorage güvenli güncelleme (token koruması)
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-
-    if (currentUser && currentUser.token) {
-      const updatedUserData = {
-        ...currentUser,
-        interests: hobbies
-      };
-      localStorage.setItem('user', JSON.stringify(updatedUserData));
-    } else {
-      console.warn("Kullanıcı bilgisi alınamadı veya token eksik. localStorage güncellenmedi.");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Hobiler güncellenirken bir hata oluştu' };
     }
-
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: 'Hobiler güncellenirken bir hata oluştu' };
-  }
-},
+  },
 
   giveReputation: async (recipientUsername, points, reason) => {
     try {
-      const response = await api.post('/api/reputation/give', {
+      const response = await api.post('/reputation/give', {
         recipientUsername,
         points,
         reason
@@ -127,16 +120,13 @@ updateUserHobbies: async (username, hobbies) => {
       });
       return response.data;
     } catch (error) {
-      if (error.response) {
-        throw new Error(error.response.data.message);
-      }
-      throw error;
+      throw new Error(error.response?.data?.message || error.message);
     }
   },
 
   getReputationHistory: async (username) => {
     try {
-      const response = await api.get(`/api/reputation/history/${username}`, {
+      const response = await api.get(`/reputation/history/${username}`, {
         headers: getAuthHeader()
       });
       return response.data;
@@ -148,17 +138,16 @@ updateUserHobbies: async (username, hobbies) => {
   searchUsers: async () => {
     try {
       const user = authService.getCurrentUser();
-      const response = await api.get(`/api/friend-requests/friends/${user.username}`, { headers: getAuthHeader() })
-          .catch(() => ({ data: [] }))
+      const response = await api.get(`/friend-requests/friends/${user.username}`, { headers: getAuthHeader() });
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Kullanıcılar aranamadı' };
     }
   },
 
-    searchAllUsers: async (query = '', currentUsername) => {
+  searchAllUsers: async (query = '', currentUsername) => {
     try {
-      const response = await api.get(`/api/profile/search?query=${encodeURIComponent(query)}&currentUsername=${encodeURIComponent(currentUsername)}`, {
+      const response = await api.get(`/profile/search?query=${encodeURIComponent(query)}&currentUsername=${encodeURIComponent(currentUsername)}`, {
         headers: getAuthHeader()
       });
       return response.data;
@@ -166,7 +155,6 @@ updateUserHobbies: async (username, hobbies) => {
       throw error.response?.data || { message: 'Kullanıcılar aranamadı' };
     }
   },
-
 };
 
-export default userService; 
+export default userService;
