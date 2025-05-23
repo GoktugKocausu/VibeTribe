@@ -309,10 +309,10 @@ const canSeeChat = isAttendee || isCreator;
             component="img"
             src={
               event.imageUrl
-                ? `http://localhost:8080${event.imageUrl}`
+                ? `${process.env.REACT_APP_API_BASE_URL.replace(/\/$/, '')}${event.imageUrl.startsWith('/api') ? event.imageUrl.substring(4) : event.imageUrl}`
                 : "https://source.unsplash.com/random?event"
             }
-            alt={event.title}
+                        alt={event.title}
             sx={{
               width: "100%",
               height: "400px",

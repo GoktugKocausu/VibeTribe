@@ -209,14 +209,21 @@ const Home = () => {
   );
 
   const renderEventCard = (event) => {
+    const baseUrl = process.env.REACT_APP_API_BASE_URL.replace(/\/$/, '');
+  
+    const getImageUrl = (imageUrl) => {
+      if (!imageUrl) return '';
+      return imageUrl.startsWith('/api') ? `${baseUrl}${imageUrl.substring(4)}` : `${baseUrl}${imageUrl}`;
+    };
+  
     const currentUser = JSON.parse(localStorage.getItem('user'));
     const isEventCreator = event.creatorUsername === currentUser?.username;
-
+  
     return (
       <Grid item xs={12} md={6} key={event.id}>
-        <Card 
+        <Card
           onClick={() => navigate(`/event/${event.eventId}`)}
-          sx={{ 
+          sx={{
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
@@ -225,23 +232,24 @@ const Home = () => {
             '&:hover': {
               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
               transform: 'translateY(-2px)',
-              transition: 'all 0.2s ease-in-out'
-            }
+              transition: 'all 0.2s ease-in-out',
+            },
           }}
         >
           <CardMedia
             component="img"
             height="200"
-            image={event.imageUrl ? `http://localhost:8080${event.imageUrl}` : ''}
+            image={event.imageUrl ? getImageUrl(event.imageUrl) : ''}
             alt={event.title}
             onError={(e) => {
               e.target.src = '';
             }}
             sx={{
               objectFit: 'cover',
-              objectPosition: 'center'
+              objectPosition: 'center',
             }}
           />
+  
           <CardContent sx={{ flexGrow: 1, p: 3 }}>
             <Box sx={{ mb: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

@@ -1,0 +1,21 @@
+replicaCount: 1
+
+image:
+  repository: harbor.local/vibetribe/frontend
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: harbor-auth
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: frontend.vibetribe.local
+  path: /
+  pathType: Prefix
+
