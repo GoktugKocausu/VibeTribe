@@ -414,13 +414,13 @@ const Friends = () => {
             }
           }}
         />
-        <IconButton 
+        {/* <IconButton 
           color="primary" 
           onClick={() => setAddFriendDialog(true)}
           sx={{ backgroundColor: '#F9FAFB', '&:hover': { backgroundColor: '#F3F4F6' } }}
         >
           <PersonAddIcon />
-        </IconButton>
+        </IconButton> */}
       </Box>
       <Divider />
       <List sx={{ flex: 1, overflowY: 'auto' }}>

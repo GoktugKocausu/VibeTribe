@@ -44,6 +44,7 @@ import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
 import eventService from '../services/eventService';
 import { useUser } from '../contexts/UserContext';
 import userService from '../services/userService';
+import messageService from '../services/messageService';
 
 const MainLayout = ({ children }) => {
   const { user, logout, updateUser } = useUser();
@@ -57,6 +58,7 @@ const MainLayout = ({ children }) => {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   // useEffect(() => {
   //   // Kullanıcı bilgisi yoksa login sayfasına yönlendir
@@ -64,6 +66,21 @@ const MainLayout = ({ children }) => {
   //     navigate('/login');
   //   }
   // }, [user, navigate, location]);
+
+useEffect(() => {
+  const fetchUnreadCount = async () => {
+    try {
+      const count = await messageService.getTotalUnreadCount();
+      setUnreadMessageCount(count);
+    } catch (err) {
+      console.error('Failed to fetch unread messages:', err);
+    }
+  };
+
+  fetchUnreadCount();
+  const interval = setInterval(fetchUnreadCount, 30000); // 30s'de bir güncelle
+  return () => clearInterval(interval);
+}, []);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -400,9 +417,9 @@ const MainLayout = ({ children }) => {
                 sx={{ display: { xs: 'none', md: 'flex' }, color: 'text.primary' }}
                 onClick={() => navigate('/friends')}
               >
-                <Badge badgeContent={3} color="error">
-                  <ChatBubbleIcon />
-                </Badge>
+                <Badge badgeContent={unreadMessageCount} color="error">
+  <ChatBubbleIcon />
+</Badge>
               </IconButton>
               <IconButton 
                 size="large" 

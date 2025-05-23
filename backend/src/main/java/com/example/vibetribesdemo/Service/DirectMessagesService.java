@@ -11,4 +11,6 @@ public interface DirectMessagesService {
     List<DirectMessageResponseDto> getConversation(UserEntity user1, UserEntity user2);
     List<DirectMessageResponseDto> getUnreadMessages(UserEntity receiver);
     void markMessagesAsRead(UserEntity sender, UserEntity receiver);
+    int countUnreadMessagesFor(UserEntity receiver);
+
 }

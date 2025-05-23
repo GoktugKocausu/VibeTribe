@@ -75,7 +75,7 @@ public class UserEntity implements UserDetails {
     @JsonIgnore
     private List<EventEntity> hostedEvents = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_interests",
         joinColumns = @JoinColumn(name = "user_id"),

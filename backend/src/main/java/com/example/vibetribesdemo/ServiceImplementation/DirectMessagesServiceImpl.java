@@ -60,7 +60,10 @@ public class DirectMessagesServiceImpl implements DirectMessagesService {
                 .map(this::mapToDto) // Map each entity to DTO
                 .collect(Collectors.toList());
     }
-
+    @Override
+    public int countUnreadMessagesFor(UserEntity receiver) {
+        return directMessagesRepository.countByReceiverAndIsReadFalse(receiver);
+    }
     @Override
     public void markMessagesAsRead(UserEntity sender, UserEntity receiver) {
         List<DirectMessagesEntity> messages = directMessagesRepository.findMessagesBetweenUsers(sender, receiver);
@@ -71,5 +74,6 @@ public class DirectMessagesServiceImpl implements DirectMessagesService {
                 directMessagesRepository.save(message); // Update each message as read
             }
         });
+
     }
 }

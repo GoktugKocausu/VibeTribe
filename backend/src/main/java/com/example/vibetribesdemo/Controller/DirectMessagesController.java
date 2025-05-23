@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/direct-messages")
@@ -65,4 +66,14 @@ public class DirectMessagesController {
 
         return ResponseEntity.noContent().build(); // Explicitly return 204 No Content
     }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<Map<String, Integer>> getUnreadCount(@RequestParam String receiverUsername) {
+        UserEntity receiver = userService.findByUsername(receiverUsername)
+                .orElseThrow(() -> new RuntimeException("Receiver not found"));
+
+        int count = directMessagesService.countUnreadMessagesFor(receiver);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
 }

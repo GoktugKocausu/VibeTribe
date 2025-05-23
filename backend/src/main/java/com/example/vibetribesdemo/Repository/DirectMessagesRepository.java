@@ -21,4 +21,7 @@ public interface DirectMessagesRepository extends JpaRepository<DirectMessagesEn
     // Get unread messages for a user
     @Query("SELECT m FROM DirectMessagesEntity m WHERE m.receiver = :receiver AND m.isRead = false")
     List<DirectMessagesEntity> findUnreadMessages(@Param("receiver") UserEntity receiver);
+
+    int countByReceiverAndIsReadFalse(UserEntity receiver);
+
 }
