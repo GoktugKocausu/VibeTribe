@@ -55,24 +55,22 @@ export const messageService = {
   },
 
   updateMessageStatus: async (messageId, status) => {
-    const response = await api.put(`/api/direct-messages/${messageId}/status`, null, {
-      params: { status },
-      headers: getAuthHeader()
-    });
-    return response.data;
-  },
+  const response = await api.put(`/direct-messages/${messageId}/status`, null, {
+    params: { status },
+ 
+  });
+  return response.data;
+},
 
-  // ✅ Toplam unread message sayısını döndürür
-  getTotalUnreadCount: async () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const response = await api.get('/api/direct-messages/unread-count', {
-      params: {
-        receiverUsername: user.username
-      },
-      headers: getAuthHeader()
-    });
-    return response.data.count; // örn: { "count": 5 }
-  }
-};
-
+getTotalUnreadCount: async () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  const response = await api.get('/direct-messages/unread-count', {
+    params: {
+      receiverUsername: user.username
+    },
+    
+  });
+  return response.data.count; // örn: { "count": 5 }
+}
+}
 export default messageService;
