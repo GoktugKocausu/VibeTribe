@@ -216,6 +216,26 @@ const eventService = {
       );
     }
   },
+  getEventsByCreator: async (username) => {
+    try {
+      const response = await api.get("/events", {
+        headers: getAuthHeader(),
+      });
+      // backend’in döndürdüğü event objesinde creatorUsername yoksa,
+      // creator nesnesinin içindeki username alanını kullanın:
+      return response.data.filter((ev) =>
+        ev.creatorUsername
+          ? ev.creatorUsername === username
+          : ev.creator?.username === username
+      );
+    } catch (error) {
+      throw (
+        error.response?.data || {
+          message: "Etkinlikler getirilirken hata oluştu",
+        }
+      );
+    }
+  },
 };
 
 export default eventService;

@@ -37,20 +37,22 @@ import {
   Favorite as InterestIcon,
   Star as ReputationIcon,
   ThumbUp as ThumbUpIcon,
-  Check as CheckIcon,          // ← EKLE
-  PersonAdd as PersonAddIcon   // ← EKLE
-} from '@mui/icons-material';
+  Check as CheckIcon,
+  PersonAdd as PersonAddIcon,
+} from "@mui/icons-material";
 import friendService from "../services/friendService";
 import userService from "../services/userService";
+import eventService from "../services/eventService"; // ← EKLENDİ
+import EventCard from "../components/EventCard"; // ← EKLENDİ
 import { useUser } from "../contexts/UserContext";
 import { useParams } from "react-router-dom";
-import { hobbyOptions } from '../services/hobbies';      // üst kısımda
-import { Autocomplete } from '@mui/material';
-
+import { hobbyOptions } from "../services/hobbies";
+import { Autocomplete } from "@mui/material";
 
 const Profile = () => {
   const { username } = useParams();
   const { user: currentUser, updateUser } = useUser();
+
   const [profileUser, setProfileUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,7 +69,7 @@ const Profile = () => {
     preferredMood: "",
     name: "",
     surname: "",
-    interests: []
+    interests: [],
   });
   const [stats, setStats] = useState({
     hostedEvents: 0,
@@ -86,7 +88,10 @@ const Profile = () => {
     areFriends: false,
     isPending: false,
   });
-  
+
+  // ← Aşağıdakiler eklendi
+  const [showMyEvents, setShowMyEvents] = useState(false);
+  const [myEvents, setMyEvents] = useState([]);
 
   useEffect(() => {
     if (username !== currentUser?.username) {
@@ -126,10 +131,10 @@ const Profile = () => {
         setStats(userStats);
 
         // Check if current user has already given reputation
-        const currentUser = JSON.parse(localStorage.getItem("user"));
-        if (currentUser && history) {
+        const current = JSON.parse(localStorage.getItem("user"));
+        if (current && history) {
           const hasGiven = history.some(
-            (rep) => rep.awardedByUsername === currentUser.username
+            (rep) => rep.awardedByUsername === current.username
           );
           setHasGivenReputation(hasGiven);
         }
@@ -148,8 +153,7 @@ const Profile = () => {
           preferredMood: userProfile.preferredMood || "",
           name: userProfile.name || "",
           surname: userProfile.surname || "",
-          interests: userProfile.interests?.map(i => i.name) || []
-
+          interests: userProfile.interests?.map((i) => i.name) || [],
         });
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -162,7 +166,7 @@ const Profile = () => {
     fetchUserData();
   }, [username]);
 
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = () => {
     setEditModalOpen(true);
   };
 
@@ -176,23 +180,22 @@ const Profile = () => {
 
   const handleEditFormSubmit = async () => {
     try {
-      await userService.updateUserProfile(
-       profileUser.username,
-   { bio: editForm.bio,
-    age: Number(editForm.age),
-    preferredMood: editForm.preferredMood,
-    name: editForm.name,
-    surname: editForm.surname} 
-      );
+      await userService.updateUserProfile(profileUser.username, {
+        bio: editForm.bio,
+        age: Number(editForm.age),
+        preferredMood: editForm.preferredMood,
+        name: editForm.name,
+        surname: editForm.surname,
+      });
       await userService.updateUserHobbies(
-  profileUser.username,
-  editForm.interests
-);
+        profileUser.username,
+        editForm.interests
+      );
+
       // Profil bilgilerini güncelle
       setProfileUser((prev) => ({
         ...prev,
         ...editForm,
-   
       }));
 
       // Context'i güncelle
@@ -273,8 +276,7 @@ const Profile = () => {
   };
 
   const handleReputationSubmit = async () => {
-    // Client-side validation
-    if (!reputationForm.reason || reputationForm.reason.trim() === "") {
+    if (!reputationForm.reason.trim()) {
       showNotification(
         "Lütfen reputation puanı verme sebebinizi yazın.",
         "error"
@@ -288,7 +290,6 @@ const Profile = () => {
         reputationForm.points,
         reputationForm.reason
       );
-      // Refresh user stats after giving reputation
       const userStats = await userService.getUserStats(profileUser.username);
       setStats(userStats);
       const history = await userService.getReputationHistory(
@@ -301,11 +302,7 @@ const Profile = () => {
     } catch (error) {
       console.error("Backend error:", error);
       let errorMessage;
-
-      // Check if the error message is directly in error.message
-      const backendMessage = error.message;
-
-      switch (backendMessage) {
+      switch (error.message) {
         case "You have already given reputation points to this user":
           errorMessage = "Bu kullanıcıya zaten reputation puanı vermişsiniz.";
           break;
@@ -323,14 +320,13 @@ const Profile = () => {
           break;
         default:
           errorMessage =
-            backendMessage ||
-            "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.";
+            error.message ||
+            "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.";
       }
       showNotification(errorMessage, "error");
     }
   };
 
-  // Profil düzenleme butonunu sadece kendi profilimizde göster
   const isOwnProfile = currentUser?.username === username;
 
   if (loading) {
@@ -392,11 +388,7 @@ const Profile = () => {
                   fontSize: "3rem",
                   border: "4px solid white",
                   cursor: isOwnProfile ? "pointer" : "default",
-                  "&:hover": isOwnProfile
-                    ? {
-                        opacity: 0.9,
-                      }
-                    : {},
+                  "&:hover": isOwnProfile ? { opacity: 0.9 } : {},
                 }}
               >
                 {profileUser?.username
@@ -443,9 +435,7 @@ const Profile = () => {
                   color: "white",
                   "& .MuiChip-icon": { color: "white" },
                   cursor: "pointer",
-                  "&:hover": {
-                    bgcolor: "rgba(255, 255, 255, 0.2)",
-                  },
+                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.2)" },
                 }}
               />
             </Box>
@@ -462,9 +452,7 @@ const Profile = () => {
                   fontWeight: 600,
                   px: 3,
                   py: 1,
-                  "&:hover": {
-                    bgcolor: "#F1F5F9",
-                  },
+                  "&:hover": { bgcolor: "#F1F5F9" },
                   boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   mr: 2,
                 }}
@@ -491,70 +479,95 @@ const Profile = () => {
                       fontWeight: 600,
                       px: 3,
                       py: 1,
-                      "&:hover": {
-                        bgcolor: "#F1F5F9",
-                      },
-                      "&.Mui-disabled": {
-                        bgcolor: "#E2E8F0",
-                        color: "white",
-                      },
+                      "&:hover": { bgcolor: "#F1F5F9" },
+                      "&.Mui-disabled": { bgcolor: "#E2E8F0", color: "white" },
                       boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                     }}
-                  ></Button>
+                  />
                 </span>
               </Tooltip>
             )}
           </Grid>
           <Grid item>
-  {!isOwnProfile && (
-    friendStatus.areFriends ? (
-      <Chip 
-        icon={<CheckIcon />} 
-        label="Arkadaşsınız" 
-        color="success" 
-        sx={{ fontWeight: 600 }} 
-      />
-    ) : friendStatus.isPending ? (
-      <Chip 
-        label="İstek Beklemede" 
-        color="warning"
-        sx={{ fontWeight: 600 }} 
-      />
-    ) : (
-      <Button
-        variant="contained"
-        startIcon={<PersonAddIcon />}
-        onClick={async () => {
-          try {
-            await friendService.sendFriendRequest(username);
-            setFriendStatus({ areFriends: false, isPending: true });
-            showNotification('Arkadaşlık isteği gönderildi', 'success');
-          } catch (err) {
-            showNotification('İstek gönderilemedi', 'error');
-          }
-        }}
-        sx={{
-          bgcolor: '#F8FAFC',
-          color: 'white',
-          fontWeight: 600,
-          px: 3,
-          py: 1,
-          '&:hover': {
-            bgcolor: '#F1F5F9',
-          }
-        }}
-      >
-        Arkadaşlık İsteği Gönder
-      </Button>
-    )
-  )}
-</Grid>
-
+            {!isOwnProfile &&
+              (friendStatus.areFriends ? (
+                <Chip
+                  icon={<CheckIcon />}
+                  label="Arkadaşsınız"
+                  color="success"
+                  sx={{ fontWeight: 600 }}
+                />
+              ) : friendStatus.isPending ? (
+                <Chip
+                  label="İstek Beklemede"
+                  color="warning"
+                  sx={{ fontWeight: 600 }}
+                />
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={<PersonAddIcon />}
+                  onClick={async () => {
+                    try {
+                      await friendService.sendFriendRequest(username);
+                      setFriendStatus({ areFriends: false, isPending: true });
+                      showNotification(
+                        "Arkadaşlık isteği gönderildi",
+                        "success"
+                      );
+                    } catch (err) {
+                      showNotification("İstek gönderilemedi", "error");
+                    }
+                  }}
+                  sx={{
+                    bgcolor: "#F8FAFC",
+                    color: "white",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
+                    "&:hover": { bgcolor: "#F1F5F9" },
+                  }}
+                >
+                  Arkadaşlık İsteği Gönder
+                </Button>
+              ))}
+          </Grid>
         </Grid>
       </Paper>
 
+      {/* Oluşturduğum Etkinlikler Butonu ve Liste */}
+      <Button
+        variant="outlined"
+        sx={{ mb: 2 }}
+        onClick={async () => {
+          setShowMyEvents((prev) => !prev);
+          if (!showMyEvents) {
+            const events = await eventService.getEventsByCreator(username);
+            setMyEvents(events);
+          }
+        }}
+      >
+        {showMyEvents ? "Etkinlikleri Gizle" : "Oluşturduğum Etkinlikler"}
+      </Button>
+
+      {showMyEvents && (
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          {myEvents.length > 0 ? (
+            myEvents.map((ev) => (
+              <Grid item xs={12} sm={6} md={4} key={ev.eventId}>
+                <EventCard event={ev} />
+              </Grid>
+            ))
+          ) : (
+            <Typography sx={{ p: 2, textAlign: "center", width: "100%" }}>
+              Henüz oluşturduğun bir etkinlik yok.
+            </Typography>
+          )}
+        </Grid>
+      )}
+
       <Grid container spacing={4}>
-        {/* Sol Kolon - Kişisel Bilgiler */}
+        {/* Sol Kolon – Kişisel Bilgiler */}
         <Grid item xs={12} md={4}>
           <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: "100%" }}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -589,7 +602,11 @@ const Profile = () => {
                         {profileUser.interests.map((interest, index) => (
                           <Chip
                             key={index}
-                            label={typeof interest === "string" ? interest : interest.name}
+                            label={
+                              typeof interest === "string"
+                                ? interest
+                                : interest.name
+                            }
                             size="small"
                             sx={{
                               bgcolor: "#E0F2FE",
@@ -621,15 +638,13 @@ const Profile = () => {
           </Paper>
         </Grid>
 
-        {/* Sağ Kolon - Etkinlikler */}
+        {/* Sağ Kolon – Son Etkinlikler */}
         <Grid item xs={12} md={8}>
-          {/* Son Etkinlikler */}
           <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
               Son Etkinlikler
             </Typography>
             <Grid container spacing={2}>
-              {/* TODO: Son etkinlikleri listele */}
               <Grid item xs={12}>
                 <Typography color="text.secondary" textAlign="center">
                   Henüz etkinlik yok
@@ -640,7 +655,8 @@ const Profile = () => {
         </Grid>
       </Grid>
 
-      {/* Edit Profile Modal */}
+      {/* Modals ve Snackbar */}
+      {/* Düzenleme Modal */}
       <Dialog
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
@@ -648,10 +664,7 @@ const Profile = () => {
         fullWidth
       >
         <DialogTitle
-          sx={{
-            borderBottom: "1px solid #E2E8F0",
-            fontWeight: 600,
-          }}
+          sx={{ borderBottom: "1px solid #E2E8F0", fontWeight: 600 }}
         >
           Profili Düzenle
         </DialogTitle>
@@ -689,28 +702,30 @@ const Profile = () => {
                 placeholder="Kendinizden bahsedin..."
               />
             </Grid>
-
-<Grid item xs={12}>
-  <Autocomplete
-    multiple
-    options={hobbyOptions}
-    value={editForm.interests}
-    onChange={(_, newValue) =>
-      setEditForm(prev => ({ ...prev, interests: newValue }))
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="İlgi Alanları"
-        placeholder="En az 3 ilgi alanı seç"
-      />
-    )}
-    ChipProps={{
-      sx: { bgcolor: '#E0F2FE', color: '#0284C7', fontSize: '0.75rem' }
-    }}
-  />
-</Grid>
-
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                options={hobbyOptions}
+                value={editForm.interests}
+                onChange={(_, newValue) =>
+                  setEditForm((prev) => ({ ...prev, interests: newValue }))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="İlgi Alanları"
+                    placeholder="En az 3 ilgi alanı seç"
+                  />
+                )}
+                ChipProps={{
+                  sx: {
+                    bgcolor: "#E0F2FE",
+                    color: "#0284C7",
+                    fontSize: "0.75rem",
+                  },
+                }}
+              />
+            </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -744,12 +759,7 @@ const Profile = () => {
           <Button
             variant="contained"
             onClick={handleEditFormSubmit}
-            sx={{
-              bgcolor: "#0EA5E9",
-              "&:hover": {
-                bgcolor: "#0284C7",
-              },
-            }}
+            sx={{ bgcolor: "#0EA5E9", "&:hover": { bgcolor: "#0284C7" } }}
           >
             Kaydet
           </Button>
@@ -764,10 +774,7 @@ const Profile = () => {
         fullWidth
       >
         <DialogTitle
-          sx={{
-            borderBottom: "1px solid #E2E8F0",
-            fontWeight: 600,
-          }}
+          sx={{ borderBottom: "1px solid #E2E8F0", fontWeight: 600 }}
         >
           Reputation Ver
         </DialogTitle>
@@ -776,9 +783,9 @@ const Profile = () => {
             <Typography>Puan (1-10)</Typography>
             <Rating
               value={reputationForm.points}
-              onChange={(event, newValue) => {
-                setReputationForm((prev) => ({ ...prev, points: newValue }));
-              }}
+              onChange={(e, newVal) =>
+                setReputationForm((prev) => ({ ...prev, points: newVal }))
+              }
               max={10}
             />
             <TextField
@@ -808,12 +815,7 @@ const Profile = () => {
           <Button
             variant="contained"
             onClick={handleReputationSubmit}
-            sx={{
-              bgcolor: "#0EA5E9",
-              "&:hover": {
-                bgcolor: "#0284C7",
-              },
-            }}
+            sx={{ bgcolor: "#0EA5E9", "&:hover": { bgcolor: "#0284C7" } }}
           >
             Gönder
           </Button>
@@ -828,24 +830,19 @@ const Profile = () => {
         fullWidth
       >
         <DialogTitle
-          sx={{
-            borderBottom: "1px solid #E2E8F0",
-            fontWeight: 600,
-          }}
+          sx={{ borderBottom: "1px solid #E2E8F0", fontWeight: 600 }}
         >
           Reputation Geçmişi
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           {reputationHistory.length > 0 ? (
             <List>
-              {reputationHistory.map((rep, index) => (
-                <React.Fragment key={index}>
+              {reputationHistory.map((rep, idx) => (
+                <React.Fragment key={idx}>
                   <ListItem alignItems="flex-start">
                     <ListItemIcon>
                       <Avatar sx={{ bgcolor: "#0EA5E9" }}>
-                        {rep.awardedByUsername
-                          ? rep.awardedByUsername[0].toUpperCase()
-                          : "?"}
+                        {rep.awardedByUsername?.[0].toUpperCase() || "?"}
                       </Avatar>
                     </ListItemIcon>
                     <ListItemText
@@ -889,9 +886,7 @@ const Profile = () => {
                             {(() => {
                               try {
                                 const date = new Date(rep.timestamp);
-                                if (isNaN(date.getTime())) {
-                                  return "Tarih bilgisi mevcut değil";
-                                }
+                                if (isNaN(date.getTime())) throw new Error();
                                 return date
                                   .toLocaleDateString("tr-TR", {
                                     year: "numeric",
@@ -901,8 +896,7 @@ const Profile = () => {
                                     minute: "2-digit",
                                   })
                                   .replace(":", ".");
-                              } catch (error) {
-                                console.error("Date parsing error:", error);
+                              } catch {
                                 return "Tarih bilgisi mevcut değil";
                               }
                             })()}
@@ -911,7 +905,7 @@ const Profile = () => {
                       }
                     />
                   </ListItem>
-                  {index < reputationHistory.length - 1 && (
+                  {idx < reputationHistory.length - 1 && (
                     <Divider variant="inset" component="li" />
                   )}
                 </React.Fragment>
@@ -931,12 +925,7 @@ const Profile = () => {
           <Button
             onClick={() => setReputationHistoryModalOpen(false)}
             variant="contained"
-            sx={{
-              bgcolor: "#0EA5E9",
-              "&:hover": {
-                bgcolor: "#0284C7",
-              },
-            }}
+            sx={{ bgcolor: "#0EA5E9", "&:hover": { bgcolor: "#0284C7" } }}
           >
             Kapat
           </Button>
