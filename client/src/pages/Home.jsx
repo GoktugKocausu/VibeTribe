@@ -220,133 +220,137 @@ const Home = () => {
     const isEventCreator = event.creatorUsername === currentUser?.username;
   
     return (
-      <Grid item xs={12} md={6} key={event.id}>
-        <Card
-          onClick={() => navigate(`/event/${event.eventId}`)}
+    <Grid item xs={12} md={6} key={event.id}>
+      <Card
+        onClick={() => navigate(`/event/${event.eventId}`)}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          bgcolor: (theme) => theme.palette.background.paper,
+          boxShadow: 3,
+          borderRadius: 3,
+          cursor: 'pointer',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: 6,
+          }
+        }}
+      >
+        <CardMedia
+          component="img"
+          height="200"
+          image={event.imageUrl ? getImageUrl(event.imageUrl) : ''}
+          alt={event.title}
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            '&:hover': {
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-              transform: 'translateY(-2px)',
-              transition: 'all 0.2s ease-in-out',
-            },
+            objectFit: 'cover',
+            borderTopLeftRadius: '12px',
+            borderTopRightRadius: '12px'
           }}
-        >
-          <CardMedia
-            component="img"
-            height="200"
-            image={event.imageUrl ? getImageUrl(event.imageUrl) : ''}
-            alt={event.title}
-            onError={(e) => {
-              e.target.src = '';
-            }}
-            sx={{
-              objectFit: 'cover',
-              objectPosition: 'center',
-            }}
-          />
-  
-          <CardContent sx={{ flexGrow: 1, p: 3 }}>
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                  <Chip
-                    label={event.category}
-                    size="small"
-                    sx={{
-                      bgcolor: '#E0F2FE',
-                      color: '#0284C7',
-                      fontWeight: 500,
-                      mb: 1,
-                      mr: 1
-                    }}
-                  />
-                  <Chip
-                    label={event.moodTag}
-                    size="small"
-                    sx={{
-                      bgcolor: '#E0F2FE',
-                      color: '#0284C7',
-                      fontWeight: 500,
-                      mb: 1
-                    }}
-                  />
-                </Box>
-                {isEventCreator && (
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleDeleteEvent(e, event.eventId)}
-                    sx={{
-                      color: 'error.main',
-                      '&:hover': {
-                        bgcolor: 'error.light',
-                        color: 'error.dark',
-                      }
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                )}
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                {event.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {event.description.length > 100
-                  ? `${event.description.substring(0, 100)}...`
-                  : event.description}
-              </Typography>
-            </Box>
+        />
 
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CalendarIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
-                <Typography variant="body2" color="text.secondary">
-                  {format(new Date(event.startTime), 'PPp', { locale: tr })}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
-                <Typography variant="body2" color="text.secondary">
-                  {event.address}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  👥 {event.currentAttendees}/{event.maxAttendees} katılımcı
-                </Typography>
-              </Box>
-              <Box>
-                <Button
+        <CardContent sx={{ flexGrow: 1, p: 3 }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <Chip
+                label={event.category}
+                size="small"
+                sx={{
+                  bgcolor: (theme) => theme.palette.mode === 'dark' ? '#1E3A8A' : '#E0F2FE',
+                  color: (theme) => theme.palette.mode === 'dark' ? '#93C5FD' : '#0284C7',
+                  fontWeight: 500,
+                }}
+              />
+              {event.moodTag && (
+                <Chip
+                  label={event.moodTag}
                   size="small"
-                  variant="contained"
-                  onClick={() => handleJoinEvent(event.id)}
-                  disabled={event.currentAttendees >= event.maxAttendees}
                   sx={{
-                    background: 'linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
-                    }
+                    bgcolor: (theme) => theme.palette.mode === 'dark' ? '#1E3A8A' : '#E0F2FE',
+                    color: (theme) => theme.palette.mode === 'dark' ? '#93C5FD' : '#0284C7',
+                    fontWeight: 500,
                   }}
-                >
-                  {event.currentAttendees >= event.maxAttendees ? 'Dolu' : 'Katıl'}
-                </Button>
-              </Box>
+                />
+              )}
             </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-    );
-  };
+
+            {isEventCreator && (
+              <IconButton
+                size="small"
+                onClick={(e) => handleDeleteEvent(e, event.eventId)}
+                sx={{
+                  color: 'error.main',
+                  '&:hover': {
+                    bgcolor: 'error.light',
+                    color: 'error.dark',
+                  }
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
+          </Box>
+
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 1 }}>
+            {event.title}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {event.description.length > 100
+              ? `${event.description.substring(0, 100)}...`
+              : event.description}
+          </Typography>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {format(new Date(event.startTime), 'PPp', { locale: tr })}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <LocationIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {event.address}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              👥 {event.currentAttendees}/{event.maxAttendees} katılımcı
+            </Typography>
+            <Button
+              size="small"
+              variant="contained"
+              disabled={event.currentAttendees >= event.maxAttendees}
+              onClick={() => handleJoinEvent(event.id)}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 500,
+                px: 2,
+                background: (theme) =>
+                  event.currentAttendees >= event.maxAttendees
+                    ? theme.palette.grey[600]
+                    : 'linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)',
+                '&:hover': {
+                  background: (theme) =>
+                    event.currentAttendees >= event.maxAttendees
+                      ? theme.palette.grey[700]
+                      : 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
+                },
+              }}
+            >
+              {event.currentAttendees >= event.maxAttendees ? 'Dolu' : 'Katıl'}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+};
 
   const renderEventsByDate = () => {
     if (Object.keys(filteredGroupedEvents).length === 0) {
@@ -361,16 +365,17 @@ const Home = () => {
         {/* Bugünün eventleri */}
         {filteredGroupedEvents[today] && (
           <Box sx={{ mb: 6 }}>
-            <Typography variant="h5" sx={{ 
-              fontWeight: 600, 
-              color: '#0F172A', 
-              mb: 3,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
-            }}>
-              <CalendarIcon sx={{ color: '#0EA5E9' }} />
-              Bugünkü Etkinlikler
+           <Typography variant="h5" sx={(theme) => ({ 
+  fontWeight: 600, 
+  color: theme.palette.text.primary,
+  mb: 3,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1
+})}>
+              <CalendarIcon sx={(theme) => ({ color: theme.palette.primary.main })} />
+
+              Bugünün Etkinlikleri
             </Typography>
             <Grid container spacing={3}>
               {filteredGroupedEvents[today].map(event => renderEventCard(event))}
@@ -404,16 +409,17 @@ const Home = () => {
   };
 
   return (
-    <Box sx={{ py: 4, bgcolor: '#F8FAFC' }}>
+    <Box sx={(theme) => ({ py: 4, bgcolor: theme.palette.background.default })}>
       <Container maxWidth="lg">
         {/* Hero Section */}
-        <Box sx={{ 
-          textAlign: 'center', 
-          mb: 8,
-          p: 6,
-          borderRadius: 4,
-          color: 'black'
-        }}>
+      <Box sx={(theme) => ({ 
+  textAlign: 'center', 
+  mb: 8,
+  p: 6,
+  borderRadius: 4,
+  color: theme.palette.text.primary,
+  bgcolor: theme.palette.background.paper
+})}>
           <Typography variant="h3" sx={{ 
             fontWeight: 700,
             mb: 2,
@@ -447,31 +453,47 @@ const Home = () => {
           <Grid item xs={12} md={4}>
             <Paper elevation={0} sx={{ 
               p: 3,
-              border: '1px solid #E2E8F0',
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+
               borderRadius: 2,
-              bgcolor: 'white',
+              bgcolor: (theme) => theme.palette.background.paper,
               mb: 3
             }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                 Etkinlik Takvimi
               </Typography>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateCalendar 
-                  value={selectedDate}
-                  onChange={(newValue) => setSelectedDate(newValue)}
-                  sx={{
-                    width: '100%',
-                    '& .MuiPickersDay-root': {
-                      fontSize: '0.9rem',
-                      '&.Mui-selected': {
-                        bgcolor: '#0EA5E9',
-                        '&:hover': {
-                          bgcolor: '#0284C7'
-                        }
-                      }
-                    }
-                  }}
-                />
+   <DateCalendar
+  value={selectedDate}
+  onChange={(newValue) => setSelectedDate(newValue)}
+  sx={(theme) => ({
+    width: '100%',
+    bgcolor: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    borderRadius: 2,
+    p: 1,
+    '& .MuiPickersDay-root': {
+      fontSize: '0.9rem',
+      color: theme.palette.text.primary,
+      '&.Mui-selected': {
+        bgcolor: theme.palette.primary.main,
+        color: theme.palette.primary.contrastText,
+        '&:hover': {
+          bgcolor: theme.palette.primary.dark,
+        },
+      },
+    },
+    '& .MuiSvgIcon-root': {
+      color: theme.palette.text.primary, // ← ok ikonlarını tema ile eşle
+    },
+    '& .MuiPickersCalendarHeader-label': {
+      color: theme.palette.text.primary, // ← Ay/Yıl metni
+    },
+    '& .MuiTypography-root': {
+      color: theme.palette.text.primary, // ← Gün isimleri
+    },
+  })}
+/>
               </LocalizationProvider>
             </Paper>
           </Grid>

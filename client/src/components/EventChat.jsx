@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTheme } from "@mui/material/styles"; // Ekle
 import {
   Box,
   Typography,
@@ -19,6 +20,7 @@ const EventChat = ({ eventId, currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const theme = useTheme();
 
   const navigate = useNavigate();
 
@@ -65,7 +67,7 @@ const EventChat = ({ eventId, currentUser }) => {
   }
 
   return (
-    <Paper sx={{ p: 3, mt: 3 }}>
+    <Paper sx={{ p: 3, mt: 3, backgroundColor: theme.palette.background.paper }}>
       <Typography variant="h6" gutterBottom>
         Etkinlik Sohbeti
       </Typography>
@@ -104,8 +106,12 @@ const EventChat = ({ eventId, currentUser }) => {
 
               <Box
                 sx={{
-                  backgroundColor: isOwn ? "#0EA5E9" : "#F3F4F6",
-                  color: isOwn ? "#fff" : "#000",
+                  backgroundColor: isOwn
+                    ? theme.palette.primary.main
+                    : theme.palette.background.default,
+                  color: isOwn
+                    ? theme.palette.primary.contrastText
+                    : theme.palette.text.primary,
                   p: 1.5,
                   borderRadius: 2,
                   maxWidth: "300px",
@@ -119,7 +125,7 @@ const EventChat = ({ eventId, currentUser }) => {
                 >
                   {msg.sender.name} {msg.sender.surname}
                 </Typography>
-                <Typography variant="caption" color={isOwn ? "#BBDEFB" : "text.secondary"}>
+                <Typography variant="caption" color={theme.palette.text.secondary}>
                   @{msg.sender.username}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 0.5 }}>

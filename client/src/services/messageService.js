@@ -57,7 +57,7 @@ export const messageService = {
   updateMessageStatus: async (messageId, status) => {
     const response = await api.put(`/api/direct-messages/${messageId}/status`, null, {
       params: { status },
-      headers: getAuthHeader()
+      
     });
     return response.data;
   },
@@ -69,7 +69,7 @@ export const messageService = {
       params: {
         receiverUsername: user.username
       },
-      headers: getAuthHeader()
+     
     });
     return response.data.count; // örn: { "count": 5 }
   }

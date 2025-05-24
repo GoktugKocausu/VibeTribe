@@ -216,7 +216,8 @@ const CreateEvent = () => {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ mt: 4, mb: 4, bgcolor: (theme) => theme.palette.background.paper, p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
+
         <Typography variant="h4" component="h1" gutterBottom>
           Yeni Etkinlik Oluştur
         </Typography>
@@ -384,18 +385,22 @@ const CreateEvent = () => {
 
             <Grid item xs={12}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Button
-                  variant="contained"
-                  component="label"
-                  startIcon={<PhotoCamera />}
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)",
-                    },
-                  }}
+              <Button
+  variant="contained"
+  component="label"
+  startIcon={<PhotoCamera />}
+  sx={{
+    background: (theme) =>
+      theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%)'
+        : 'linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)',
+    '&:hover': {
+      background: (theme) =>
+        theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)'
+          : 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
+    },
+  }}
                 >
                   Etkinlik Görseli Seç
                   <input
@@ -444,12 +449,17 @@ const CreateEvent = () => {
                 sx={{
                   mt: 2,
                   height: "48px",
-                  background:
-                    "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)",
-                  },
+                   background: (theme) =>
+    theme.palette.mode === 'dark'
+      ? 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)'
+      : undefined, // light modda MUI'nin varsayılan kırmızı tonunu kullansın
+  color: theme => theme.palette.getContrastText(theme.palette.error.main),
+  '&:hover': {
+    background: (theme) =>
+      theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, #B91C1C 0%, #DC2626 100%)'
+        : undefined,
+  },
                 }}
                 disabled={loading}
               >
@@ -466,10 +476,16 @@ const CreateEvent = () => {
       onClick={() => navigate('/')}
       sx={{
         px: 3,
-        background: 'linear-gradient(135deg,#DC2626 0%,#EF4444 100%)',
-        color: '#fff',
-        textTransform: 'none',
-        '&:hover': { background: 'linear-gradient(135deg,#B91C1C 0%,#DC2626 100%)' },
+        background: (theme) =>
+  theme.palette.mode === 'dark'
+    ? 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)'
+    : 'linear-gradient(135deg,#DC2626 0%,#EF4444 100%)',
+'&:hover': {
+  background: (theme) =>
+    theme.palette.mode === 'dark'
+      ? 'linear-gradient(135deg, #B91C1C 0%, #DC2626 100%)'
+      : 'linear-gradient(135deg,#B91C1C 0%, #DC2626 100%)',
+},
       }}
     >
       İptal
