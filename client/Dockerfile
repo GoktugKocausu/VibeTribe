@@ -1,5 +1,5 @@
 # Base Stage
-FROM node:16-alpine AS base
+FROM node:20-bullseye AS base
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
